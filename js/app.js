@@ -250,21 +250,43 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ============================================================
    * Audio Engine (Web Speech API)
    * ============================================================ */
+  /* Giọng do hệ điều hành cung cấp nên mỗi máy một khác. Chọn giọng phổ thông chuẩn theo thứ tự:
+   *   Google 普通话 (Android, Chrome) → Tingting (iOS, macOS) → Xiaoxiao/Huihui… (Windows, Edge)
+   * Bỏ qua các giọng "vui" của Apple (Eddy, Grandpa…). Không khớp tên nào thì lấy giọng
+   * tiếng Trung đại lục đầu tiên như trước. */
+  var VOICE_PREFS = [/google/i, /ting-?ting|婷婷/i, /xiaoxiao|xiaoyi|yaoyao|huihui/i];
+  var NOVELTY_VOICE = /\b(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
+  function voiceScore(v) {
+    var lang = String(v.lang || ''), name = String(v.name || '');
+    var mainland = /^(zh|cmn)[-_](cn|hans)/i.test(lang) || /普通话|mandarin|china mainland|中国大陆/i.test(name);
+    if (!mainland && !/^(zh|cmn)/i.test(lang)) return -1;    // không phải giọng tiếng Trung
+    var score = mainland ? 100 : 0;                          // ưu tiên phổ thông đại lục hơn Đài/HK
+    if (NOVELTY_VOICE.test(name)) score -= 50;
+    for (var i = 0; i < VOICE_PREFS.length; i++) {
+      if (VOICE_PREFS[i].test(name)) { score += (VOICE_PREFS.length - i) * 10; break; }
+    }
+    if (/enhanced|premium|natural|优化/i.test(name)) score += 2; // bản chất lượng cao nếu máy đã tải
+    return score;
+  }
   var zhVoice = null;
   function pickVoice() {
-    var voices = window.speechSynthesis.getVoices();
-    zhVoice = voices.find(function (v) { return /zh[-_]CN/i.test(v.lang); }) ||
-              voices.find(function (v) { return /^zh/i.test(v.lang); }) || null;
+    var best = null, bestScore = -1;
+    window.speechSynthesis.getVoices().forEach(function (v) {
+      var s = voiceScore(v);
+      if (s > bestScore) { best = v; bestScore = s; }       // bằng điểm thì giữ giọng đứng trước
+    });
+    zhVoice = best;
   }
   if ('speechSynthesis' in window) {
     pickVoice();
-    window.speechSynthesis.onvoiceschanged = pickVoice;
+    window.speechSynthesis.addEventListener('voiceschanged', pickVoice);
   }
 
   var warnedNoVoice = false;
   function speak(text) {
     if (!text) return;
     if (!('speechSynthesis' in window)) { toast('Trình duyệt không hỗ trợ phát âm.'); return; }
+    if (!zhVoice) pickVoice();                            // iOS có thể nạp danh sách giọng muộn
     window.speechSynthesis.cancel();                      // tránh đọc dồn
     var u = new SpeechSynthesisUtterance(text);
     u.lang = 'zh-CN';
