@@ -41,6 +41,125 @@ document.addEventListener('DOMContentLoaded', function () {
       .replace(/[üv]/g, 'u').replace(/[\s'\-:]/g, '');
   }
 
+  /* ============================================================
+   * Thanh điệu: tách pinyin có dấu thành âm tiết, tô màu theo thanh 1–4 + thanh nhẹ (5)
+   * ============================================================ */
+  var TONE_MARK = { '̄': 1, '́': 2, '̌': 3, '̀': 4 };
+  var PY_INITIALS = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w', ''];
+  var PY_FINALS = ['iang', 'iong', 'uang', 'ang', 'eng', 'ing', 'ong', 'ian', 'iao', 'uai', 'uan', 'van',
+    'ai', 'ao', 'an', 'ei', 'en', 'er', 'ia', 'ie', 'in', 'iu', 'ou', 'ua', 'uo', 'ui', 'un', 'ue', 've', 'vn',
+    'a', 'e', 'i', 'o', 'u', 'v'];
+  var PY_VOWEL = /[aeiouv]/;
+
+  /** Âm tiết bắt đầu tại i trong chuỗi không dấu (ü = v) → vị trí kết thúc, -1 nếu không khớp */
+  function matchSyllable(s, i) {
+    for (var a = 0; a < PY_INITIALS.length; a++) {
+      var ini = PY_INITIALS[a];
+      if (s.substr(i, ini.length) !== ini) continue;
+      var j = i + ini.length;
+      for (var b = 0; b < PY_FINALS.length; b++) {
+        var fin = PY_FINALS[b];
+        if (s.substr(j, fin.length) !== fin) continue;
+        var k = j + fin.length;
+        // -n / -ng / -r không đứng trước nguyên âm (fangan → fan|gan, dàrén → dà|rén)
+        if (/(n|ng|r)$/.test(fin) && PY_VOWEL.test(s.charAt(k))) continue;
+        if (!ini && !fin) continue;
+        if (fin !== 'er' && s.charAt(k) === 'r' && !PY_VOWEL.test(s.charAt(k + 1))) k++;   // nhi hóa: wánr
+        return k;
+      }
+    }
+    return -1;
+  }
+
+  /** "Xuéxí Hànyǔ." → [{text:'Xué', tone:2}, {text:'xí', tone:2}, {text:' '}, …] */
+  function parsePinyin(py) {
+    var chars = Array.from(String(py || '').normalize('NFC'));
+    var base = [], tones = [];
+    chars.forEach(function (c) {
+      var d = c.normalize('NFD'), t = 0, b = d.charAt(0).toLowerCase();
+      for (var x = 1; x < d.length; x++) {
+        if (TONE_MARK[d.charAt(x)]) t = TONE_MARK[d.charAt(x)];
+        if (d.charAt(x) === '̈') b = 'v';
+      }
+      base.push(/[a-zü]/.test(b) ? (b === 'ü' ? 'v' : b) : null);
+      tones.push(t);
+    });
+    var out = [], i = 0;
+    while (i < chars.length) {
+      if (base[i] === null) {                 // dấu câu, khoảng trắng, chữ số…
+        var j0 = i;
+        while (i < chars.length && base[i] === null) i++;
+        out.push({ text: chars.slice(j0, i).join('') });
+        continue;
+      }
+      var run = i;
+      while (run < chars.length && base[run] !== null) run++;
+      var s = base.slice(i, run).join('');
+      var pos = 0;
+      while (pos < s.length) {
+        var end = matchSyllable(s, pos);
+        if (end < 0) end = pos + 1;           // không phải pinyin chuẩn → giữ nguyên ký tự
+        var tone = 0;
+        for (var k = i + pos; k < i + end; k++) if (tones[k]) { tone = tones[k]; break; }
+        out.push({ text: chars.slice(i + pos, i + end).join(''), tone: tone || 5 });
+        pos = end;
+      }
+      i = run;
+    }
+    return out;
+  }
+
+  function pinyinHtml(py) {
+    return parsePinyin(py).map(function (p) {
+      return p.tone ? '<span class="t' + p.tone + '">' + esc(p.text) + '</span>' : esc(p.text);
+    }).join('');
+  }
+
+  /** Tô chữ Hán theo thanh khi số chữ khớp số âm tiết; không khớp (nhi hóa, chữ cái…) thì để nguyên */
+  function hanziToneHtml(hz, py) {
+    // Mỗi chữ Hán ứng với 1 âm tiết; âm tiết nhi hóa (zhèr) ứng với 2 chữ 这儿 → 儿 lấy cùng thanh
+    var slots = [];
+    parsePinyin(py).forEach(function (p) {
+      if (!p.tone) return;
+      slots.push(p.tone);
+      if (/r$/i.test(p.text) && !/^[eēéěè]r$/i.test(p.text)) slots.push('r' + p.tone);
+    });
+    var chars = Array.from(hz || '');
+    var cjk = chars.filter(function (c) { return CJK.test(c); });
+    if (cjk.length !== slots.length) slots = slots.filter(function (t) { return typeof t === 'number'; });
+    if (!cjk.length || cjk.length !== slots.length) return esc(hz);
+    var n = 0;
+    return chars.map(function (c) {
+      if (!CJK.test(c)) return esc(c);
+      var t = String(slots[n++]).replace('r', '');
+      return '<span class="t' + t + '">' + esc(c) + '</span>';
+    }).join('');
+  }
+
+  /* ============================================================
+   * Tùy chọn giao diện: Sáng/Tối, ẩn Pinyin, ẩn nghĩa, tô màu thanh điệu
+   * (key riêng 'hoctq-ui' để không làm các tab khác tải lại)
+   * ============================================================ */
+  var KEY_UI = 'hoctq-ui';
+  var ui = (function () {
+    var v = {};
+    try { v = JSON.parse(localStorage.getItem(KEY_UI)) || {}; } catch (e) { /* bỏ qua */ }
+    return {
+      theme: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light',
+      pinyin: v.pinyin !== false,
+      meaning: v.meaning !== false,
+      tone: v.tone !== false,
+      themeSaved: !!v.theme
+    };
+  })();
+  function saveUi() {
+    try {
+      localStorage.setItem(KEY_UI, JSON.stringify({
+        theme: ui.themeSaved ? ui.theme : undefined, pinyin: ui.pinyin, meaning: ui.meaning, tone: ui.tone
+      }));
+    } catch (e) { /* bỏ qua */ }
+  }
+
   function toast(msg) {
     $('#toast-body').innerHTML = msg;
     bootstrap.Toast.getOrCreateInstance($('#app-toast'), { delay: 2500 }).show();
@@ -103,9 +222,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   var EXAMPLE_TYPE = {
-    basic: { label: 'Câu đơn giản', cls: 'text-bg-success' },
-    simple: { label: 'Câu đơn', cls: 'text-bg-info' },
-    compound: { label: 'Câu ghép', cls: 'text-bg-primary' }
+    basic: { label: 'Câu đơn giản', cls: 'ex-basic' },
+    simple: { label: 'Câu đơn', cls: 'ex-simple' },
+    compound: { label: 'Câu ghép', cls: 'ex-compound' }
   };
 
   /* ============================================================
@@ -267,6 +386,12 @@ document.addEventListener('DOMContentLoaded', function () {
     renderCard();
   }
 
+  /** Chấm vàng trên nút Bộ lọc (điện thoại) khi đang lọc theo trạng thái hoặc chủ đề */
+  function renderFilterDot() {
+    var active = $('#filter-mode').value !== 'all' || !!$('#filter-tag').value;
+    $('#filter-dot').classList.toggle('d-none', !active);
+  }
+
   function renderHskFilter() {
     var levels = availableLevels();
     var s = $('#filter-hsk');
@@ -297,10 +422,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     $('#deck-stats').innerHTML =
       '<i class="bi bi-collection"></i> ' + all.length + ' từ · ' +
-      '<span class="text-secondary">' + fresh + ' mới</span> · ' +
+      '<span>' + fresh + ' mới</span> · ' +
       '<span class="txt-learning">' + learning + ' đang học</span> · ' +
       '<span class="txt-mastered">' + mastered + ' đã thuộc</span>' +
-      (due ? ' · <span class="text-danger">' + due + ' cần ôn</span>' : '');
+      (due ? ' · <span class="txt-due">' + due + ' cần ôn</span>' : '');
+    renderFilterDot();
   }
 
   /* ============================================================
@@ -372,15 +498,18 @@ document.addEventListener('DOMContentLoaded', function () {
     front.textContent = w.hanzi;
     front.style.fontSize = w.hanzi.length > 3 ? 'clamp(2.5rem, 9vw, 4.5rem)' : '';
     $('#card-hsk').textContent = 'HSK ' + w.hsk_level;
+    var layer = $('#swipe-layer');
+    layer.classList.remove('enter'); void layer.offsetWidth; layer.classList.add('enter');
     $('#card-pos').textContent = (state.index + 1) + ' / ' + state.deck.length;
 
-    $('#back-hanzi').textContent = w.hanzi;
+    $('#back-hanzi').innerHTML = hanziToneHtml(w.hanzi, w.pinyin);
     $('#back-trad').textContent = w.traditional && w.traditional !== w.hanzi ? '(' + w.traditional + ')' : '';
-    $('#back-pinyin').textContent = w.pinyin;
+    $('#back-pinyin').innerHTML = pinyinHtml(w.pinyin);
     $('#back-meaning').textContent = w.meaning_vi;
+    $$('#flashcard .peek').forEach(function (el) { el.classList.remove('peek'); });
     renderImage($('#back-image'), w.image);
     $('#back-tags').innerHTML = (w.tags || []).map(function (t) {
-      return '<span class="badge rounded-pill text-bg-light border me-1">' + esc(tagLabel(t)) + '</span>';
+      return '<span class="tag-chip">' + esc(tagLabel(t)) + '</span>';
     }).join('');
     $('#back-explain').textContent = w.explanation || '';
     var related = w.related || [];
@@ -390,21 +519,21 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="related-grid">' + related.map(function (r) {
           return '<button type="button" class="related-row" data-zh="' + esc(r.hanzi) + '" title="Chạm để nghe">' +
             '<span class="rel-zh zh">' + esc(r.hanzi) + '</span>' +
-            '<span class="rel-py">/' + esc(r.pinyin) + '/</span>' +
-            '<span class="rel-colon">:</span>' +
-            '<span class="rel-vi">' + esc(r.vi) + '</span></button>';
+            '<span class="rel-py peekable" data-peek="pinyin">' + pinyinHtml(r.pinyin) + '</span>' +
+            '<span class="rel-colon">·</span>' +
+            '<span class="rel-vi peekable" data-peek="meaning">' + esc(r.vi) + '</span></button>';
         }).join('') + '</div>' +
       '</div>';
     $('#back-examples').innerHTML = !(w.examples || []).length ? '' :
-      '<div class="section-title mt-2"><i class="bi bi-chat-quote"></i> Ví dụ</div>' +
+      '<div class="section-title mt-1"><i class="bi bi-chat-quote"></i> Ví dụ</div>' +
       w.examples.map(function (ex, i) {
       var t = EXAMPLE_TYPE[ex.type];
       return '<div class="example">' +
-        (t ? '<span class="badge ex-type ' + t.cls + '">' + t.label + '</span>' : '') +
-        '<div class="ex-zh zh">' + esc(ex.zh) +
-        ' <button class="btn btn-link btn-sm btn-speak-ex" data-ex="' + i + '" title="Nghe câu"><i class="bi bi-volume-up"></i></button></div>' +
-        '<div class="ex-py">' + esc(ex.pinyin) + '</div>' +
-        '<div class="ex-vi">' + esc(ex.vi) + '</div></div>';
+        (t ? '<span class="ex-badge ' + t.cls + '">' + t.label + '</span>' : '') +
+        '<div class="ex-zh zh">' + esc(ex.zh) + '</div>' +
+        '<div class="ex-py peekable" data-peek="pinyin">' + pinyinHtml(ex.pinyin) + '</div>' +
+        '<div class="ex-vi peekable" data-peek="meaning">' + esc(ex.vi) + '</div>' +
+        '<button type="button" class="btn-speak-ex" data-ex="' + i + '" title="Nghe câu" aria-label="Nghe câu"><i class="bi bi-volume-up"></i></button></div>';
     }).join('');
     $('.back-scroll').scrollTop = 0;
 
@@ -440,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#card-status').innerHTML = STATUS_LABEL[p.status];
     $('#review-info').innerHTML = STATUS_LABEL[p.status] +
       (p.status === 'new' ? ' · Chưa học lần nào'
-        : ' · <span class="text-success">' + p.correctCount + ' đúng</span> · <span class="text-danger">' + p.wrongCount + ' sai</span>' +
+        : ' · <span class="txt-ok">' + p.correctCount + ' đúng</span> · <span class="txt-bad">' + p.wrongCount + ' sai</span>' +
           ' · Ôn lại ' + fromNow(p.nextReview));
     // Gợi ý khoảng ôn cho nút "Tạm nhớ" theo số lần đúng liên tiếp
     var next = p.streak + 1;
@@ -478,13 +607,21 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ============================================================
    * Vở tập viết (Hanzi Writer)
    * ============================================================ */
-  function padSize() { return window.innerWidth < 576 ? 260 : 300; }
+  /** Cạnh ô viết: máy tính 320px; điện thoại/máy tính bảng theo chiều rộng màn hình (240–360px).
+   *  Chỉ phụ thuộc chiều rộng → thanh địa chỉ iOS co/giãn không làm mất nét đang viết. */
+  function padSize() {
+    if (window.innerWidth >= 992) return 320;
+    return Math.max(240, Math.min(360, window.innerWidth - 64));
+  }
+
+  /** Màu ô viết lấy từ biến CSS → đúng cả chế độ Sáng và Tối */
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
   function gridSvg(size) {
     var s = size, h = s / 2;
-    var dash = 'stroke="#e3b4a8" stroke-width="1" stroke-dasharray="6,5"';
+    var dash = 'stroke="' + cssVar('--writer-grid') + '" stroke-width="1" stroke-dasharray="6,5"';
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" id="writer-svg">' +
-      '<rect x="1" y="1" width="' + (s - 2) + '" height="' + (s - 2) + '" fill="none" stroke="#d9381e" stroke-width="2"/>' +
+      '<rect x="1" y="1" width="' + (s - 2) + '" height="' + (s - 2) + '" rx="10" fill="none" stroke="' + cssVar('--writer-frame') + '" stroke-width="2"/>' +
       '<line x1="0" y1="' + h + '" x2="' + s + '" y2="' + h + '" ' + dash + '/>' +
       '<line x1="' + h + '" y1="0" x2="' + h + '" y2="' + s + '" ' + dash + '/>' +
       '<line x1="0" y1="0" x2="' + s + '" y2="' + s + '" ' + dash + '/>' +
@@ -494,8 +631,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function renderCharTabs() {
     $('#char-tabs').innerHTML = state.chars.length < 2 ? '' : state.chars.map(function (c, i) {
-      return '<li class="nav-item"><button class="nav-link' + (i === state.charIndex ? ' active' : '') +
-        '" data-i="' + i + '">' + esc(c) + '</button></li>';
+      return '<li><button type="button" class="char-tab' + (i === state.charIndex ? ' active' : '') +
+        '" data-i="' + i + '" aria-label="Tập viết chữ ' + esc(c) + '">' + esc(c) + '</button></li>';
     }).join('');
   }
 
@@ -505,23 +642,24 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#writer-box').innerHTML = '';
   }
 
+  /** cls: st-ok | st-bad | st-hint | st-warn | '' (mặc định: chữ phụ) */
   function setStatus(html, cls) {
     var el = $('#writer-status');
-    el.className = 'mt-2 small ' + (cls || '');
+    el.className = 'writer-status ' + (cls || '');
     el.innerHTML = html || '&nbsp;';
   }
 
   function loadWriterChar() {
     destroyWriter();
     var ch = state.chars[state.charIndex];
-    if (!ch) { setStatus('Từ này không có ký tự Hán hợp lệ để tập viết.', 'text-danger'); return; }
+    if (!ch) { setStatus('Từ này không có ký tự Hán hợp lệ để tập viết.', 'st-bad'); return; }
 
     var size = padSize();
     var box = $('#writer-box');
     box.style.width = size + 'px';
     box.style.height = size + 'px';
     box.innerHTML = gridSvg(size);
-    setStatus('<span class="spinner-border spinner-border-sm"></span> Đang tải nét chữ…', 'text-body-secondary');
+    setStatus('<span class="spinner-border spinner-border-sm"></span> Đang tải nét chữ…');
 
     var token = {};
     state.loadToken = token;
@@ -532,11 +670,11 @@ document.addEventListener('DOMContentLoaded', function () {
       padding: 14,
       showOutline: state.outline,
       showCharacter: false,
-      strokeColor: '#222222',
-      radicalColor: '#d9381e',
-      outlineColor: '#e8e2d6',
-      highlightColor: '#3d8bfd',
-      drawingColor: '#333333',
+      strokeColor: cssVar('--writer-stroke'),
+      radicalColor: cssVar('--writer-radical'),
+      outlineColor: cssVar('--writer-outline'),
+      highlightColor: cssVar('--primary'),
+      drawingColor: cssVar('--writer-stroke'),
       drawingWidth: isTouch ? 24 : 18,
       strokeAnimationSpeed: 1,
       delayBetweenStrokes: 250,
@@ -550,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       onLoadCharDataError: function () {
         if (state.loadToken !== token) return;
-        setStatus('Không tải được dữ liệu nét chữ (kiểm tra kết nối mạng).', 'text-danger');
+        setStatus('Không tải được dữ liệu nét chữ (kiểm tra kết nối mạng).', 'st-bad');
       }
     });
     renderWritingStats();
@@ -568,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var ch = state.chars[state.charIndex];
     w.cancelQuiz();
     w.hideCharacter();
-    setStatus('Viết nét đầu tiên theo đúng thứ tự…', 'text-body-secondary');
+    setStatus('Viết nét đầu tiên theo đúng thứ tự…');
 
     w.quiz({
       onMistake: function (sd) {
@@ -576,13 +714,13 @@ document.addEventListener('DOMContentLoaded', function () {
         shakePad();
         if (sd.mistakesOnStroke >= 3) {
           w.highlightStroke(sd.strokeNum);
-          setStatus('Gợi ý: theo nét đang nháy sáng (nét ' + (sd.strokeNum + 1) + ')', 'text-primary');
+          setStatus('Gợi ý: theo nét đang nháy sáng (nét ' + (sd.strokeNum + 1) + ')', 'st-hint');
         } else {
-          setStatus('Chưa đúng nét ' + (sd.strokeNum + 1) + ' — sai hướng hoặc sai thứ tự (' + sd.mistakesOnStroke + '/3)', 'text-danger');
+          setStatus('Chưa đúng nét ' + (sd.strokeNum + 1) + ' — sai hướng hoặc sai thứ tự (' + sd.mistakesOnStroke + '/3)', 'st-bad');
         }
       },
       onCorrectStroke: function (sd) {
-        setStatus('Đúng! Còn ' + sd.strokesRemaining + ' nét', 'text-success');
+        setStatus('Đúng! Còn ' + sd.strokesRemaining + ' nét', 'st-ok');
       },
       onComplete: function (summary) {
         var word = currentWord();
@@ -594,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
           ? '🎉 Hoàn hảo! Không sai nét nào.'
           : 'Hoàn thành với ' + summary.totalMistakes + ' nét sai.';
         var hasNext = state.charIndex < state.chars.length - 1;
-        setStatus(msg + (hasNext ? ' Chuyển sang chữ tiếp theo…' : ''), summary.totalMistakes ? 'text-warning-emphasis' : 'text-success');
+        setStatus(msg + (hasNext ? ' Chuyển sang chữ tiếp theo…' : ''), summary.totalMistakes ? 'st-warn' : 'st-ok');
         if (hasNext) setTimeout(function () { selectChar(state.charIndex + 1); }, 1200);
       }
     });
@@ -603,16 +741,16 @@ document.addEventListener('DOMContentLoaded', function () {
   function animate() {
     var w = state.writer; if (!w) return;
     w.cancelQuiz();
-    setStatus('Đang vẽ mẫu thứ tự nét…', 'text-body-secondary');
+    setStatus('Đang vẽ mẫu thứ tự nét…');
     w.hideCharacter();
     w.animateCharacter({
-      onComplete: function () { setStatus('Xong. Nhấn <b>Tập viết</b> để tự viết.', 'text-body-secondary'); }
+      onComplete: function () { setStatus('Xong. Nhấn <b>Viết lại</b> để tự viết.'); }
     });
   }
 
   function selectChar(i) {
     state.charIndex = i;
-    $$('#char-tabs .nav-link').forEach(function (b) { b.classList.toggle('active', +b.dataset.i === i); });
+    $$('#char-tabs .char-tab').forEach(function (b) { b.classList.toggle('active', +b.dataset.i === i); });
     loadWriterChar();
   }
 
@@ -700,17 +838,17 @@ document.addEventListener('DOMContentLoaded', function () {
       var status = p ? p.status : 'new';
       return '<tr class="row-' + status + '">' +
         '<td class="zh">' + esc(v.hanzi) + '</td>' +
-        '<td>' + esc(v.pinyin) + '</td>' +
-        '<td>' + esc(v.meaning_vi) + '</td>' +
+        '<td class="py-cell"><span class="peekable" data-peek="pinyin">' + pinyinHtml(v.pinyin) + '</span></td>' +
+        '<td><span class="peekable" data-peek="meaning">' + esc(v.meaning_vi) + '</span></td>' +
         '<td class="d-none d-md-table-cell">' + esc(v.hsk_level) + '</td>' +
         '<td>' + STATUS_LABEL[status] + '</td>' +
         '<td class="d-none d-md-table-cell small">' + (p && status !== 'new' ? fmtDate(p.nextReview) : '—') + '</td>' +
         '<td class="text-end text-nowrap">' +
-          '<button class="btn btn-sm btn-outline-primary btn-study" data-id="' + esc(v.id) + '" title="Học từ này"><i class="bi bi-play"></i></button>' +
+          '<button type="button" class="btn-study" data-id="' + esc(v.id) + '" title="Học từ này" aria-label="Học từ ' + esc(v.hanzi) + '"><i class="bi bi-play-fill"></i></button>' +
         '</td></tr>';
     });
     $('#vocab-table').innerHTML = rows.join('') ||
-      '<tr><td colspan="7" class="text-center text-body-secondary">Không tìm thấy</td></tr>';
+      '<tr><td colspan="7" class="text-center text-muted-2">Không tìm thấy</td></tr>';
 
     $('#list-info').textContent = matched.length
       ? (start + 1) + '–' + Math.min(start + size, matched.length) + ' / ' + matched.length + ' từ'
@@ -744,6 +882,7 @@ document.addEventListener('DOMContentLoaded', function () {
    * Sự kiện
    * ============================================================ */
   on('#flashcard', 'click', function (e) {
+    if (swipe.justSwiped) return;
     if (e.target.closest('button')) return;
     if (String(window.getSelection())) return;
     setFlipped(!state.flipped);
@@ -752,6 +891,145 @@ document.addEventListener('DOMContentLoaded', function () {
   on('#btn-prev', 'click', function () { go(-1); });
   on('#btn-next', 'click', function () { go(1); });
   on('#btn-speak', 'click', function () { var w = currentWord(); if (w) speak(w.hanzi); });
+  on('#btn-speak-write', 'click', function () { var w = currentWord(); if (w) speak(w.hanzi); });
+
+  /* ---------- Vuốt thẻ: trái = Chưa nhớ, phải = Đã thuộc (chạm = lật) ---------- */
+  var swipe = { justSwiped: false };
+  (function initSwipe() {
+    var layer = $('#swipe-layer');
+    var pid = null, x0 = 0, y0 = 0, dx = 0, dragging = false, armed = false, passed = false;
+
+    function threshold() { return Math.min(130, layer.offsetWidth * 0.3); }
+    function setPos(x) {
+      var r = Math.max(-1, Math.min(1, x / threshold()));
+      layer.style.transform = x ? 'translateX(' + x + 'px) rotate(' + (x / 16).toFixed(2) + 'deg)' : '';
+      layer.style.setProperty('--swipe', r.toFixed(3));
+      layer.dataset.dir = r > 0.15 ? 'know' : r < -0.15 ? 'again' : '';
+    }
+    function reset(animate) {
+      if (!animate) layer.classList.add('no-anim');
+      setPos(0);
+      if (!animate) { void layer.offsetWidth; layer.classList.remove('no-anim'); }
+    }
+
+    layer.addEventListener('pointerdown', function (e) {
+      // Chỉ vuốt bằng ngón tay / bút; chuột dùng nút bấm và phím tắt
+      if (e.pointerType === 'mouse' || pid !== null) return;
+      if (e.target.closest('button, .peekable')) return;
+      pid = e.pointerId; x0 = e.clientX; y0 = e.clientY; dx = 0;
+      armed = true; dragging = false; passed = false;
+    });
+    layer.addEventListener('pointermove', function (e) {
+      if (!armed || e.pointerId !== pid) return;
+      var mx = e.clientX - x0, my = e.clientY - y0;
+      if (!dragging) {
+        if (Math.abs(mx) < 10 && Math.abs(my) < 10) return;
+        if (Math.abs(my) >= Math.abs(mx)) { armed = false; pid = null; return; }   // cuộn dọc mặt sau
+        dragging = true;
+        layer.classList.add('dragging');
+        try { layer.setPointerCapture(pid); } catch (err) { /* bỏ qua */ }
+      }
+      dx = mx;
+      setPos(dx);
+      var over = Math.abs(dx) >= threshold();
+      if (over && !passed && navigator.vibrate) navigator.vibrate(12);
+      passed = over;
+    });
+    function finish(e) {
+      if (e.pointerId !== pid) return;
+      pid = null; armed = false;
+      if (!dragging) return;
+      dragging = false;
+      layer.classList.remove('dragging');
+      swipe.justSwiped = true;
+      setTimeout(function () { swipe.justSwiped = false; }, 80);
+      if (e.type === 'pointerup' && Math.abs(dx) >= threshold() && currentWord()) {
+        var dir = dx > 0 ? 1 : -1;
+        layer.style.transform = 'translateX(' + dir * (layer.offsetWidth * 1.4) + 'px) rotate(' + dir * 24 + 'deg)';
+        setTimeout(function () {
+          reset(false);
+          rate(dir > 0 ? 'mastered' : 'again');
+        }, 220);
+      } else {
+        reset(true);
+      }
+    }
+    layer.addEventListener('pointerup', finish);
+    layer.addEventListener('pointercancel', finish);
+  })();
+
+  /* ---------- Ô tập viết: chặn cuộn trang & pull-to-refresh khi ngón tay đang viết ---------- */
+  (function lockWriterTouch() {
+    var box = $('#writer-box');
+    var stop = function (e) { if (e.cancelable) e.preventDefault(); };
+    box.addEventListener('touchstart', function (e) {
+      document.documentElement.classList.add('is-writing');
+      stop(e);
+    }, { passive: false });
+    box.addEventListener('touchmove', stop, { passive: false });
+    ['touchend', 'touchcancel'].forEach(function (ev) {
+      box.addEventListener(ev, function () { document.documentElement.classList.remove('is-writing'); });
+    });
+    box.addEventListener('contextmenu', stop);
+  })();
+
+  /* ---------- Chế độ học trên điện thoại: Thẻ ↔ Tập viết ---------- */
+  function setMode(mode) {
+    $('#study-area').dataset.mode = mode;
+    $$('.seg-btn').forEach(function (b) {
+      var on = b.dataset.mode === mode;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+  delegate('.seg', 'click', '.seg-btn', function (e, el) { setMode(el.dataset.mode); });
+
+  /* ---------- Sáng / Tối ---------- */
+  function applyTheme(theme) {
+    ui.theme = theme;
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    $('#meta-theme-color').setAttribute('content', theme === 'dark' ? '#0F172A' : '#FAF9F5');
+    $('#btn-theme').setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    if (state.chars.length) loadWriterChar();      // vẽ lại ô viết theo màu mới
+  }
+  on('#btn-theme', 'click', function () {
+    ui.themeSaved = true;
+    applyTheme(ui.theme === 'dark' ? 'light' : 'dark');
+    saveUi();
+  });
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+      if (!ui.themeSaved) applyTheme(e.matches ? 'dark' : 'light');   // theo hệ điều hành nếu chưa tự chọn
+    });
+  }
+
+  /* ---------- Ẩn/hiện nhanh Pinyin & nghĩa (tự kiểm tra mặt chữ) ---------- */
+  function renderPeekToggles() {
+    var root = document.documentElement;
+    root.classList.toggle('hide-pinyin', !ui.pinyin);
+    root.classList.toggle('hide-meaning', !ui.meaning);
+    root.classList.toggle('tone-on', ui.tone);
+    [['#tg-pinyin', ui.pinyin], ['#tg-meaning', ui.meaning]].forEach(function (p) {
+      var b = $(p[0]);
+      b.setAttribute('aria-pressed', p[1] ? 'true' : 'false');
+      b.querySelector('i').className = 'bi ' + (p[1] ? 'bi-eye' : 'bi-eye-slash');
+    });
+    $$('.peek').forEach(function (el) { el.classList.remove('peek'); });
+  }
+  function togglePeek(key) { ui[key] = !ui[key]; saveUi(); renderPeekToggles(); }
+  on('#tg-pinyin', 'click', function () { togglePeek('pinyin'); });
+  on('#tg-meaning', 'click', function () { togglePeek('meaning'); });
+  // Đang ẩn: chạm vào dòng bị làm mờ để xem riêng dòng đó (không lật thẻ, không phát âm)
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('.peekable');
+    if (!el || el.classList.contains('peek')) return;
+    var hidden = el.dataset.peek === 'pinyin' ? !ui.pinyin : !ui.meaning;
+    if (!hidden) return;
+    e.stopPropagation();
+    e.preventDefault();
+    el.classList.add('peek');
+  }, true);
+  renderPeekToggles();
   delegate('#back-related', 'click', '.related-row', function (e, el) {
     e.stopPropagation();
     speak(el.dataset.zh);
@@ -784,6 +1062,7 @@ document.addEventListener('DOMContentLoaded', function () {
   on('#settings-modal', 'show.bs.modal', function () {
     var d = Store.getDaily(), s = Store.summary(), st = Store.getSettings();
     $('#goal-input').value = d.dailyGoal;
+    $('#set-tone').checked = ui.tone;
     $('#start-level').innerHTML = availableLevels().map(function (l, i) {
       return '<option value="' + (i + 1) + '">' + (i ? 'Bắt đầu từ ' : 'Từ đầu: ') + esc(l.label) + '</option>';
     }).join('');
@@ -809,6 +1088,8 @@ document.addEventListener('DOMContentLoaded', function () {
     toast('Đã lưu: mục tiêu ' + g + ' từ/ngày' + (opened ? ', mở khóa đến ' + esc(availableLevels()[start - 1].label) : '') + '.');
   });
   on('#goal-input', 'keydown', function (e) { if (e.key === 'Enter') $('#btn-save-goal').click(); });
+  // Tô màu thanh điệu: áp dụng ngay khi gạt công tắc
+  on('#set-tone', 'change', function () { ui.tone = this.checked; saveUi(); renderPeekToggles(); });
 
   // Đặt lại tiến độ: luôn qua hộp xác nhận
   on('#btn-open-reset', 'click', function () {
@@ -839,11 +1120,13 @@ document.addEventListener('DOMContentLoaded', function () {
     renderCard();
   });
 
-  delegate('#char-tabs', 'click', '.nav-link', function (e, el) { selectChar(+el.dataset.i); });
+  delegate('#char-tabs', 'click', '.char-tab', function (e, el) { selectChar(+el.dataset.i); });
   on('#btn-quiz', 'click', startQuiz);
   on('#btn-animate', 'click', animate);
   on('#btn-outline', 'click', function () {
     state.outline = !state.outline;
+    this.setAttribute('aria-pressed', state.outline ? 'true' : 'false');
+    this.querySelector('i').className = 'bi ' + (state.outline ? 'bi-eye' : 'bi-eye-slash');
     if (state.writer) { if (state.outline) state.writer.showOutline(); else state.writer.hideOutline(); }
   });
 
@@ -860,6 +1143,8 @@ document.addEventListener('DOMContentLoaded', function () {
       case '1': rate('again'); break;
       case '2': rate('good'); break;
       case '3': rate('mastered'); break;
+      case 'p': case 'P': togglePeek('pinyin'); break;
+      case 'm': case 'M': togglePeek('meaning'); break;
     }
   });
 
