@@ -1,0 +1,8 @@
+# Dữ liệu gốc dạng CSV – chỉ dùng trên máy để tạo js/data (chạy cap-nhat-du-lieu.bat)
+/data/
+
+# Chỉ mục của công cụ phân tích mã, không phải mã nguồn web
+/.ast-graph/
+
+# Cấu hình công cụ xem trước cục bộ
+/.claude/
