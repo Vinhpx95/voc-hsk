@@ -579,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function setFlipped(v) {
     state.flipped = v;
     $('#flashcard').classList.toggle('flipped', v);
+    $('.back-scroll').scrollTop = 0;     // mỗi lần lật, mặt sau luôn bắt đầu từ đầu thẻ
   }
 
   function go(delta) {

@@ -464,6 +464,9 @@ button { -webkit-tap-highlight-color: transparent; }
     var(--surface);
 }
 .flashcard-back { transform: rotateY(180deg); padding: 1.5rem 1.75rem; }
+/* Mặt đang úp không nhận chạm/cuộn: tránh cuộn trên mặt trước lại cuộn ngầm nội dung mặt sau */
+.flashcard:not(.flipped) .flashcard-back,
+.flashcard.flipped .flashcard-front { pointer-events: none; }
 .swipe-layer[data-dir="know"] .flashcard-face { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18), var(--shadow); }
 .swipe-layer[data-dir="again"] .flashcard-face { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(245, 158, 11, .2), var(--shadow); }
 
