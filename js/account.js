@@ -53,8 +53,6 @@
         if (act === 'signout') render(GUEST);
         showWelcome(true);
         alertBox('');
-      } else if (act === 'sync') {
-        DEMO.syncedAt = Date.now(); render(DEMO);
       }
     });
     return;
@@ -161,7 +159,7 @@
       case 'syncing':
       case 'loading': return { cls: 'warn', icon: 'bi-arrow-repeat', text: 'Đang đồng bộ…' };
       case 'offline': return { cls: 'bad', icon: 'bi-cloud-slash', text: 'Đang ngoại tuyến. Tiến độ vẫn lưu trên máy và sẽ đồng bộ khi có mạng.' };
-      case 'error': return { cls: 'bad', icon: 'bi-exclamation-triangle', text: 'Chưa đồng bộ được. Bấm “Đồng bộ ngay” để thử lại.' };
+      case 'error': return { cls: 'bad', icon: 'bi-exclamation-triangle', text: 'Chưa đồng bộ được, trang sẽ tự thử lại. Tiến độ vẫn lưu trên máy.' };
       default: return { cls: '', icon: 'bi-cloud', text: info.syncedAt ? 'Đồng bộ gần nhất ' + timeText(info.syncedAt) : 'Đang kết nối…' };
     }
   }
@@ -181,7 +179,6 @@
           '<div><div class="account-name">' + esc(info.name || 'Tài khoản Google') + '</div>' +
           '<div class="account-email">' + esc(info.email) + '</div></div></div>' +
         '<div class="account-status ' + st.cls + '"><i class="bi ' + st.icon + '"></i><span>' + st.text + '</span></div>' +
-        '<button type="button" class="dropdown-item" data-act="sync"><i class="bi bi-arrow-repeat"></i> Đồng bộ ngay</button>' +
         '<button type="button" class="dropdown-item" data-act="signout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>';
       $('#sync-note').innerHTML = '<i class="bi bi-cloud-check"></i> Tiến độ được đồng bộ với tài khoản <b>' + esc(info.email || info.name) + '</b>.';
       $('#reset-scope').textContent = ' trên mọi thiết bị đã đăng nhập';
@@ -209,9 +206,6 @@
       var m = bootstrap.Modal.getInstance($('#settings-modal')); if (m) m.hide();
       showWelcome(true);
       alertBox('');
-    } else if (act === 'sync') {
-      e.preventDefault();
-      Cloud.syncNow();
     } else if (act === 'signout') {
       Cloud.flush().then(function () {
         var st = Cloud.info().status;
@@ -220,11 +214,6 @@
         Cloud.signOut();
       });
     }
-  });
-
-  // Không đóng menu khi bấm "Đồng bộ ngay" để thấy trạng thái cập nhật
-  $('#account-menu').addEventListener('click', function (e) {
-    if (e.target.closest('[data-act="sync"]')) e.stopPropagation();
   });
 
   window.addEventListener('authchange', function (e) {

@@ -192,8 +192,18 @@
     queue = queue.then(fn, fn).catch(function (e) {
       console.warn('[sync]', e);
       setStatus(navigator.onLine === false ? 'offline' : 'error');
+      scheduleRetry();
     });
     return queue;
+  }
+  /** Lỗi đồng bộ → tự thử lại sau 30 giây (không cần người học bấm gì) */
+  var retryTimer = null;
+  function scheduleRetry() {
+    if (retryTimer || !user) return;
+    retryTimer = setTimeout(function () {
+      retryTimer = null;
+      if (user) Cloud.syncNow();
+    }, 30 * 1000);
   }
   function userRef() { return db.collection('users').doc(user.uid); }
   function shardId(set) { return String(set || 'khac').replace(/[\/.]/g, '_') || 'khac'; }

@@ -49,7 +49,7 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 
 ## Cách đồng bộ hoạt động
 
-- Trang luôn lưu trên máy trước, nên vẫn học được khi mất mạng. Sau mỗi thay đổi khoảng 2 giây, hoặc khi chuyển
+- Mọi thứ tự động, không có nút đồng bộ. Trang luôn lưu trên máy trước, nên vẫn học được khi mất mạng; gặp lỗi thì tự thử lại sau 30 giây. Sau mỗi thay đổi khoảng 2 giây, hoặc khi chuyển
   sang app khác, tiến độ được gửi lên. Khi mở trang hoặc quay lại tab, trang tải bản mới từ thiết bị khác về.
 - Nếu học trên hai máy cùng lúc, từng từ giữ lần chấm điểm mới nhất. Thống kê tập viết được gộp theo từng chữ.
   Số từ học hôm nay được cộng gộp, các cấp đã mở không bị khóa lại.
