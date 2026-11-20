@@ -369,27 +369,49 @@
     </div>
   </div>
 
-  <!-- Tổng kết khi hoàn thành mục tiêu ngày -->
-  <div class="modal fade done-modal" id="done-modal" tabindex="-1" aria-labelledby="done-title" aria-hidden="true">
+  <!-- Chúc mừng khi xong một mục tiêu: mục tiêu ngày, chuỗi ngày, cột mốc từ đã thuộc, mở cấp mới (js/app.js → celebrate) -->
+  <div class="modal fade cele-modal" id="cele-modal" tabindex="-1" aria-labelledby="cele-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body">
-          <button type="button" class="btn-close done-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-          <div class="done-hero"><span class="done-icon">🎉</span></div>
-          <h5 class="done-title" id="done-title">Hoàn thành mục tiêu hôm nay!</h5>
-          <p class="done-sub" id="done-sub"></p>
-          <div class="done-stats">
-            <div class="done-stat"><i class="bi bi-check2-circle"></i><b id="done-today">0</b><span>từ hôm nay</span></div>
-            <div class="done-stat"><i class="bi bi-fire"></i><b id="done-streak">0</b><span>ngày liên tiếp</span></div>
-            <div class="done-stat"><i class="bi bi-gem"></i><b id="done-mastered">0</b><span>đã thuộc</span></div>
+          <button type="button" class="btn-close cele-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          <div class="cele-mascot" aria-hidden="true">
+            <svg viewBox="0 0 120 112" xmlns="http://www.w3.org/2000/svg">
+              <ellipse class="cele-shadow" cx="60" cy="104" rx="30" ry="4.5"/>
+              <g class="cele-bun">
+                <path class="cele-arm cele-arm-l" d="M24 70 Q10 62 12 48"/>
+                <path class="cele-arm cele-arm-r" d="M96 70 Q110 62 108 48"/>
+                <path class="cele-body" d="M18 74 C18 46 37 28 60 28 C83 28 102 46 102 74 C102 92 84 100 60 100 C36 100 18 92 18 74 Z"/>
+                <path class="cele-pleat" d="M47 33 Q60 17 73 33 M53 31 Q60 23 67 31"/>
+                <circle class="cele-dot" cx="60" cy="42" r="3.2"/>
+                <path class="cele-eye" d="M41 66 Q46.5 59 52 66 M68 66 Q73.5 59 79 66"/>
+                <ellipse class="cele-blush" cx="37" cy="75" rx="6.5" ry="3.8"/>
+                <ellipse class="cele-blush" cx="83" cy="75" rx="6.5" ry="3.8"/>
+                <path class="cele-mouth" d="M52 73 Q60 85 68 73 Q60 76.5 52 73 Z"/>
+              </g>
+              <path class="cele-spark s1" d="M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8 Z" transform="translate(12 24)"/>
+              <path class="cele-spark s2" d="M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8 Z" transform="translate(108 20) scale(.8)"/>
+              <path class="cele-spark s3" d="M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8 Z" transform="translate(110 86) scale(.6)"/>
+              <path class="cele-spark s4" d="M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8 Z" transform="translate(8 88) scale(.55)"/>
+            </svg>
           </div>
-          <button type="button" class="btn btn-primary w-100 done-next" data-bs-dismiss="modal"><i class="bi bi-arrow-right-circle"></i> Học tiếp</button>
-          <div class="callout callout-amber done-support support-entry">
-            <div class="done-support-text">Muốn luyện cả khi không mở máy? Có sẵn <b>vở luyện viết PDF</b> và <b>audio nghe thụ động</b> giá chỉ từ 29k, hoặc mời tác giả một ly trà sữa 🧋 nếu Voc-Lang giúp ích cho bạn.</div>
-            <div class="done-support-actions">
-              <button type="button" class="btn btn-sm btn-amber-soft" data-support-open="products"><i class="bi bi-file-earmark-arrow-down"></i> Xem tài liệu</button>
-              <button type="button" class="btn btn-sm btn-link-amber" data-support-open="donate">Mời trà sữa</button>
-            </div>
+          <span class="cele-badge" id="cele-badge"></span>
+          <h5 class="cele-title" id="cele-title"></h5>
+          <button type="button" class="cele-cheer" id="cele-cheer" title="Chạm để nghe">
+            <span class="cele-zh" id="cele-zh"></span>
+            <span class="cele-py"><span id="cele-py"></span> <i class="bi bi-volume-up"></i></span>
+          </button>
+          <p class="cele-sub" id="cele-sub"></p>
+          <div class="cele-stats">
+            <div class="cele-stat"><span class="cele-stat-icon">📚</span><b id="cele-today">0</b><span>từ hôm nay</span></div>
+            <div class="cele-stat"><span class="cele-stat-icon">🔥</span><b id="cele-streak">0</b><span>ngày liên tiếp</span></div>
+            <div class="cele-stat"><span class="cele-stat-icon">💎</span><b id="cele-mastered">0</b><span>đã thuộc</span></div>
+          </div>
+          <div class="cele-extra" id="cele-extra"></div>
+          <button type="button" class="btn btn-primary w-100 cele-next" data-bs-dismiss="modal">Học tiếp nào <i class="bi bi-arrow-right"></i></button>
+          <div class="cele-donate support-entry">
+            <span>Voc-Lang có giúp bạn? Mời tác giả ly trà sữa nhé!</span>
+            <button type="button" class="cele-donate-btn" data-support-open="donate">🧋 Mời trà sữa</button>
           </div>
         </div>
       </div>

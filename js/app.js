@@ -165,19 +165,111 @@ document.addEventListener('DOMContentLoaded', function () {
     bootstrap.Toast.getOrCreateInstance($('#app-toast'), { delay: 2500 }).show();
   }
 
-  /** Tổng kết khi vừa đạt mục tiêu ngày (1 lần/ngày): số liệu + "Học tiếp" + gợi ý Tài liệu & Ủng hộ */
-  function showDoneSummary(delay) {
-    setTimeout(function () {
-      var modal = $('#done-modal');
-      if (!modal || document.querySelector('.modal.show')) { toast('🎉 Hoàn thành mục tiêu hôm nay! Tiếp tục giữ chuỗi ngày học nhé.'); return; }
-      var d = Store.getDaily(), s = Store.summary();
-      $('#done-today').textContent = d.todayCount;
-      $('#done-streak').textContent = d.streakCount;
-      $('#done-mastered').textContent = s.mastered;
-      $('#done-sub').innerHTML = 'Bạn đã học <b>' + d.todayCount + '/' + d.dailyGoal + '</b> từ hôm nay' +
-        (d.streakCount > 1 ? ' và giữ chuỗi <b>' + d.streakCount + ' ngày</b> liên tiếp 🔥' : '') + '. Làm tốt lắm!';
-      bootstrap.Modal.getOrCreateInstance(modal).show();
-    }, delay || 0);
+  /* ============================================================
+   * Chúc mừng khi xong một mục tiêu: mục tiêu ngày, chuỗi ngày đẹp, cột mốc từ đã thuộc, mở cấp mới.
+   * Nhiều thành tích cùng lúc (vd. vừa xong mục tiêu vừa mở cấp) → gộp vào một lần, cái lớn nhất làm tiêu đề.
+   * ============================================================ */
+  var KEY_CELE = 'hoctq-cele';            // cột mốc "đã thuộc" đã chúc mừng (không có dấu chấm → không bị coi là dữ liệu học)
+  var STREAK_MILESTONES = [3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365];
+  var MASTERED_MILESTONES = [10, 25, 50, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000];
+  var CELE = {
+    unlock:   { pri: 4, badge: '🔓 Mở khóa cấp mới', zh: '恭喜你！', py: 'Gōngxǐ nǐ! · Chúc mừng bạn!' },
+    mastered: { pri: 3, badge: '💎 Cột mốc mới', zh: '你真厉害！', py: 'Nǐ zhēn lìhai! · Bạn giỏi thật đấy!' },
+    streak:   { pri: 2, badge: '🔥 Chuỗi ngày học', zh: '坚持就是胜利！', py: 'Jiānchí jiù shì shènglì! · Kiên trì là chiến thắng!' },
+    goal:     { pri: 1, badge: '🎯 Mục tiêu hôm nay', zh: '太棒了！', py: 'Tài bàng le! · Tuyệt vời quá!' }
+  };
+  var cele = { pending: [], timer: null, waiting: null };
+
+  function celeText(ev, d) {
+    switch (ev.type) {
+      case 'unlock': return {
+        title: 'Mở khóa ' + esc(ev.label) + '!',
+        sub: 'Bạn đã thuộc 80% từ ' + esc(ev.prev) + '. Cả một kho từ vựng mới đang chờ bạn khám phá!',
+        pill: '🔓 Mở ' + esc(ev.label) };
+      case 'mastered': return {
+        title: 'Đã thuộc ' + ev.n + ' từ!',
+        sub: '<b>' + ev.n + ' từ</b> đã nằm gọn trong trí nhớ của bạn. Cứ đà này thì HSK chẳng là gì!',
+        pill: '💎 Thuộc ' + ev.n + ' từ' };
+      case 'streak': return {
+        title: ev.n + ' ngày liên tiếp!',
+        sub: 'Ngày nào cũng học đều đặn, trí nhớ của bạn đang cảm ơn bạn đấy. Hôm nay xong <b>' + d.todayCount + '/' + d.dailyGoal + '</b> từ rồi!',
+        pill: '🔥 Chuỗi ' + ev.n + ' ngày' };
+      default: return {
+        title: 'Xong mục tiêu hôm nay rồi!',
+        sub: 'Bạn đã học <b>' + d.todayCount + '/' + d.dailyGoal + '</b> từ hôm nay. Giỏi quá, giữ nhịp này nhé!',
+        pill: '🎯 Xong mục tiêu ngày' };
+    }
+  }
+
+  function celebrate(ev, delay) {
+    cele.pending.push(ev);
+    clearTimeout(cele.timer);
+    cele.timer = setTimeout(flushCelebrate, delay || 0);
+  }
+  function flushCelebrate() {
+    var evs = cele.pending.splice(0).sort(function (a, b) { return CELE[b.type].pri - CELE[a.type].pri; });
+    if (!evs.length) return;
+    var modal = $('#cele-modal'), open = document.querySelector('.modal.show');
+    if (open === modal) {                       // đang chúc mừng → chờ đóng rồi hiện tiếp
+      cele.waiting = (cele.waiting || []).concat(evs);
+      return;
+    }
+    if (!modal || open) {                       // đang mở Cài đặt / Tài liệu… → chỉ báo nhẹ
+      var d0 = Store.getDaily();
+      toast('🎉 ' + celeText(evs[0], d0).title);
+      return;
+    }
+    var d = Store.getDaily(), s = Store.summary(), main = evs[0], t = celeText(main, d), meta = CELE[main.type];
+    $('#cele-badge').textContent = meta.badge;
+    $('#cele-title').innerHTML = t.title;
+    $('#cele-zh').textContent = meta.zh;
+    $('#cele-py').textContent = meta.py;
+    $('#cele-sub').innerHTML = t.sub;
+    $('#cele-today').textContent = d.todayCount;
+    $('#cele-streak').textContent = d.streakCount;
+    $('#cele-mastered').textContent = s.mastered;
+    $('#cele-extra').innerHTML = evs.slice(1).map(function (e) {
+      return '<span class="cele-pill">' + celeText(e, d).pill + '</span>';
+    }).join('');
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+    confetti();
+  }
+
+  function confetti() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var layer = document.createElement('div');
+    layer.className = 'confetti-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    var colors = ['#14B8A6', '#F59E0B', '#F43F5E', '#3B82F6', '#8B5CF6', '#FBBF24', '#34D399', '#FB7185'];
+    var html = '';
+    for (var i = 0; i < 80; i++) {
+      var shape = i % 3 === 1 ? ' is-round' : i % 3 === 2 ? ' is-strip' : '';
+      html += '<i class="confetti-piece' + shape + '" style="left:' + (Math.random() * 100).toFixed(1) + '%;' +
+        'background:' + colors[i % colors.length] + ';' +
+        'animation-delay:' + (Math.random() * .7).toFixed(2) + 's;' +
+        'animation-duration:' + (2.2 + Math.random() * 1.6).toFixed(2) + 's;' +
+        '--drift:' + Math.round(Math.random() * 180 - 90) + 'px;' +
+        '--spin:' + Math.round((360 + Math.random() * 720) * (Math.random() < .5 ? -1 : 1)) + 'deg"></i>';
+    }
+    layer.innerHTML = html;
+    document.body.appendChild(layer);
+    setTimeout(function () { layer.remove(); }, 4800);
+  }
+
+  /** Cột mốc "đã thuộc" vừa vượt qua (chỉ chúc mừng mỗi mốc một lần trên máy này) */
+  function masteredMilestone(before, after) {
+    if (after <= before) return 0;
+    var done = 0;
+    try { done = (JSON.parse(localStorage.getItem(KEY_CELE)) || {}).mastered || 0; } catch (e) { /* bỏ qua */ }
+    var hit = 0;
+    MASTERED_MILESTONES.forEach(function (m) { if (before < m && after >= m && m > done) hit = m; });
+    if (hit) try { localStorage.setItem(KEY_CELE, JSON.stringify({ mastered: hit })); } catch (e) { /* bỏ qua */ }
+    return hit;
+  }
+  /** Xong mục tiêu ngày: chuỗi ngày rơi đúng mốc đẹp → chúc mừng chuỗi, không thì chúc mừng mục tiêu */
+  function goalEvent() {
+    var n = Store.getDaily().streakCount;
+    return STREAK_MILESTONES.indexOf(n) >= 0 ? { type: 'streak', n: n } : { type: 'goal' };
   }
 
   function splitChars(text) {
@@ -486,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Lộ trình: báo khi vừa mở cấp mới, và nhắc còn bao nhiêu từ để mở cấp tiếp theo
     var levels = availableLevels(), open = unlockedCount(s);
     if (lastUnlocked !== null && open > lastUnlocked) {
-      toast('🔓 Đã mở khóa <b>' + esc(levels[open - 1].label) + '</b>! Bạn có thể bắt đầu học cấp mới.');
+      celebrate({ type: 'unlock', label: levels[open - 1].label, prev: (levels[open - 2] || {}).label || 'cấp trước' });
       renderHskFilter();
     }
     lastUnlocked = open;
@@ -628,9 +720,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var RATE_TEXT = { again: 'Chưa nhớ', good: 'Tạm nhớ', mastered: 'Đã thuộc' };
   function rate(kind) {
     var w = currentWord(); if (!w || !RATE_TEXT[kind]) return;
+    var before = Store.summary().mastered;
     var res = Store.rate(w.id, kind, w.set);
-    if (res.goalReached) showDoneSummary(0);
-    else toast(RATE_TEXT[kind] + ' · ôn lại ' + fromNow(res.progress.nextReview));
+    var hit = masteredMilestone(before, Store.summary().mastered);
+    if (hit) celebrate({ type: 'mastered', n: hit });
+    if (res.goalReached) celebrate(goalEvent());
+    if (!hit && !res.goalReached) toast(RATE_TEXT[kind] + ' · ôn lại ' + fromNow(res.progress.nextReview));
     renderDeckStats();
     renderList();
     if ($('#filter-mode').value === 'all') { go(1); }
@@ -762,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function () {
       onComplete: function (summary) {
         var word = currentWord();
         if (word && Store.recordWriting(word.id, ch, summary.totalMistakes, word.set).goalReached) {
-          showDoneSummary(1500);   // đợi xem kết quả nét viết / chuyển chữ xong rồi mới hiện
+          celebrate(goalEvent(), 1500);   // đợi xem kết quả nét viết / chuyển chữ xong rồi mới hiện
         }
         renderWritingStats();
         var msg = summary.totalMistakes === 0
@@ -918,6 +1013,14 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ============================================================
    * Sự kiện
    * ============================================================ */
+  // Chúc mừng: chạm câu tiếng Trung để nghe; đóng xong còn thành tích chờ thì hiện tiếp
+  on('#cele-cheer', 'click', function () { speak($('#cele-zh').textContent); });
+  $('#cele-modal').addEventListener('hidden.bs.modal', function () {
+    if (!cele.waiting) return;
+    cele.pending = cele.waiting; cele.waiting = null;
+    cele.timer = setTimeout(flushCelebrate, 300);
+  });
+
   on('#flashcard', 'click', function (e) {
     if (swipe.justSwiped) return;
     if (e.target.closest('button')) return;

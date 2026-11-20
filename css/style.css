@@ -1017,7 +1017,7 @@ html.show-welcome .app-toasts { display: none !important; }
   .nav-switch-btn i { display: none; }
 }
 
-/* ---------- 11c. Tài liệu & Ủng hộ (#support-modal), tổng kết mục tiêu ngày (#done-modal), chân trang ---------- */
+/* ---------- 11c. Tài liệu & Ủng hộ (#support-modal), chúc mừng (#cele-modal), chân trang ---------- */
 /* Thông tin chuyển khoản còn là mẫu → ẩn mọi lối vào trên trang thật (js/support.js gắn .support-on) */
 html:not(.support-on) .support-entry { display: none !important; }
 
@@ -1052,45 +1052,115 @@ html.show-welcome .app-footer { display: none !important; }
 }
 .footer-support:hover { background: var(--primary-soft); }
 
-/* Tổng kết mục tiêu ngày */
-.done-modal .modal-dialog { max-width: 420px; }
-.done-modal .modal-content { border-radius: 20px; overflow: hidden; }
-.done-modal .modal-body {
-  position: relative; padding: 1.75rem 1.5rem 1.5rem; text-align: center;
-  background: radial-gradient(120% 55% at 50% 0%, var(--primary-soft), transparent 72%);
+/* Chúc mừng khi xong một mục tiêu (#cele-modal) */
+.cele-modal .modal-dialog { max-width: 400px; }
+.cele-modal .modal-content { border-radius: 24px; overflow: hidden; border: 0; }
+.cele-modal .modal-body {
+  position: relative; padding: 1.25rem 1.5rem 1.4rem; text-align: center;
+  background:
+    radial-gradient(90% 45% at 50% 0%, rgba(var(--primary-rgb), .16), transparent 70%),
+    radial-gradient(60% 35% at 100% 100%, var(--amber-soft), transparent 70%),
+    var(--surface);
 }
-.done-close { position: absolute; top: .9rem; right: .9rem; }
-.done-icon {
-  display: inline-grid; place-items: center; width: 68px; height: 68px; border-radius: 50%;
-  background: var(--surface); box-shadow: 0 0 0 8px var(--primary-soft), var(--shadow-sm);
-  font-size: 2rem; line-height: 1;
-  animation: done-pop .6s var(--ease) both;
+.cele-close { position: absolute; top: .9rem; right: .9rem; z-index: 1; }
+
+.cele-mascot { width: 128px; height: 120px; margin: .25rem auto 0; }
+.cele-mascot svg { width: 100%; height: 100%; overflow: visible; }
+.cele-shadow { fill: rgba(15, 23, 42, .1); animation: cele-shadow 1.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.cele-body { fill: #FFF8EC; stroke: #EADBC2; stroke-width: 2; }
+.cele-pleat, .cele-arm { fill: none; stroke: #EADBC2; stroke-width: 2.5; stroke-linecap: round; }
+.cele-arm { stroke: #E9D3AE; stroke-width: 6; }
+.cele-dot { fill: #F43F5E; }
+.cele-eye { fill: none; stroke: #3F3A36; stroke-width: 3; stroke-linecap: round; }
+.cele-blush { fill: #FB7185; opacity: .45; }
+.cele-mouth { fill: #E11D48; }
+.cele-bun { transform-box: view-box; transform-origin: 60px 100px; animation: cele-hop 1.5s var(--ease) infinite; }
+.cele-arm-l { transform-box: view-box; transform-origin: 24px 70px; animation: cele-wave-l .5s ease-in-out infinite alternate; }
+.cele-arm-r { transform-box: view-box; transform-origin: 96px 70px; animation: cele-wave-r .5s ease-in-out infinite alternate; }
+.cele-spark { fill: var(--amber); transform-box: fill-box; transform-origin: center; animation: cele-twinkle 1.6s ease-in-out infinite; }
+.cele-spark.s2 { fill: var(--primary); animation-delay: .4s; }
+.cele-spark.s3 { fill: #FB7185; animation-delay: .8s; }
+.cele-spark.s4 { fill: var(--primary); animation-delay: 1.2s; }
+@keyframes cele-hop {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  18% { transform: translateY(0) scale(1.08, .9); }
+  42% { transform: translateY(-14px) scale(.95, 1.06); }
+  66% { transform: translateY(0) scale(1.06, .93); }
+  80% { transform: translateY(0) scale(.98, 1.02); }
 }
-@keyframes done-pop { from { transform: scale(.4) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
-.done-title { margin: 1.1rem 0 .35rem; font-size: 1.3rem; font-weight: 700; letter-spacing: -.01em; color: var(--bs-emphasis-color); }
-.done-sub { margin: 0 auto 1.1rem; max-width: 22rem; color: var(--text-muted); font-size: .92rem; }
-.done-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin-bottom: 1.1rem; }
-.done-stat {
-  display: flex; flex-direction: column; align-items: center; gap: .1rem;
-  padding: .7rem .35rem; border-radius: 12px; background: var(--surface-2);
+@keyframes cele-shadow { 0%, 18%, 66%, 100% { transform: scale(1); opacity: 1; } 42% { transform: scale(.7); opacity: .5; } }
+@keyframes cele-wave-l { from { transform: rotate(8deg); } to { transform: rotate(-14deg); } }
+@keyframes cele-wave-r { from { transform: rotate(-8deg); } to { transform: rotate(14deg); } }
+@keyframes cele-twinkle { 0%, 100% { opacity: .25; scale: .6; } 50% { opacity: 1; scale: 1.15; } }
+
+.cele-badge {
+  display: inline-block; margin-top: .35rem; padding: .2rem .7rem; border-radius: 999px;
+  background: var(--primary-soft); color: var(--primary-ink); font-size: .78rem; font-weight: 700;
 }
-.done-stat i { color: var(--primary); font-size: 1.05rem; }
-.done-stat .bi-fire { color: var(--amber); }
-.done-stat .bi-gem { color: var(--tone-4); }
-.done-stat b { font-size: 1.35rem; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--bs-emphasis-color); }
-.done-stat span { font-size: .72rem; color: var(--text-muted); }
-.done-support { margin: 1rem 0 0; text-align: left; font-size: .86rem; line-height: 1.5; }
-.done-support-actions { display: flex; align-items: center; gap: .35rem .75rem; flex-wrap: wrap; margin-top: .6rem; }
-.btn-amber-soft {
-  --bs-btn-bg: var(--surface); --bs-btn-border-color: rgba(245, 158, 11, .5); --bs-btn-color: var(--amber-ink);
-  --bs-btn-hover-bg: var(--amber); --bs-btn-hover-border-color: var(--amber); --bs-btn-hover-color: #fff;
-  --bs-btn-active-bg: var(--amber-hover); --bs-btn-active-border-color: var(--amber-hover); --bs-btn-active-color: #fff;
+.cele-title {
+  margin: .55rem 0 .2rem; font-size: 1.45rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.25;
+  color: var(--bs-emphasis-color);
+  animation: cele-pop .55s var(--ease) .1s both;
 }
-.btn-link-amber {
-  border: 0; padding: 0; min-height: 36px; background: none; color: var(--amber-ink);
-  font-size: .86rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
+@keyframes cele-pop { from { opacity: 0; transform: translateY(8px) scale(.92); } to { opacity: 1; transform: none; } }
+.cele-cheer {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 0;
+  margin: 0 auto .35rem; padding: .25rem .9rem; border: 0; border-radius: 14px; background: transparent;
+  transition: background-color .2s ease;
 }
-.btn-link-amber:hover { color: var(--amber-hover); }
+.cele-cheer:hover { background: var(--surface-2); }
+.cele-zh { font-family: var(--font-zh-card); font-size: 1.7rem; font-weight: 700; line-height: 1.35; color: var(--rose); }
+[data-bs-theme="dark"] .cele-zh { color: #FB7185; }
+.cele-py { font-size: .8rem; color: var(--text-muted); }
+.cele-py i { margin-left: .15rem; color: var(--primary); }
+.cele-sub { margin: 0 auto 1rem; max-width: 22rem; font-size: .92rem; line-height: 1.5; color: var(--text-muted); }
+.cele-sub b { color: var(--text); }
+
+.cele-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; margin-bottom: .9rem; }
+.cele-stat {
+  display: flex; flex-direction: column; align-items: center; gap: .05rem;
+  padding: .65rem .35rem .6rem; border-radius: 16px; background: var(--surface-2);
+  animation: cele-pop .5s var(--ease) both;
+}
+.cele-stat:nth-child(1) { animation-delay: .2s; }
+.cele-stat:nth-child(2) { animation-delay: .3s; }
+.cele-stat:nth-child(3) { animation-delay: .4s; }
+.cele-stat-icon { font-size: 1.15rem; line-height: 1.2; }
+.cele-stat b { font-size: 1.35rem; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--bs-emphasis-color); }
+.cele-stat span:last-child { font-size: .72rem; color: var(--text-muted); }
+.cele-extra { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; margin-bottom: .9rem; }
+.cele-extra:empty { display: none; }
+.cele-pill { padding: .2rem .65rem; border-radius: 999px; background: var(--amber-soft); color: var(--amber-ink); font-size: .78rem; font-weight: 600; }
+.cele-next { min-height: 48px; border-radius: 14px; font-size: 1rem; }
+
+.cele-donate {
+  display: flex; align-items: center; justify-content: space-between; gap: .5rem .75rem;
+  margin-top: .85rem; padding: .55rem .6rem .55rem .9rem;
+  border-radius: 14px; background: var(--amber-soft);
+  font-size: .84rem; line-height: 1.4; text-align: left; color: var(--text);
+}
+.cele-donate-btn {
+  flex: none; min-height: 36px; padding: 0 .85rem; border: 0; border-radius: 999px;
+  background: var(--amber); color: #fff; font-size: .84rem; font-weight: 700; white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, .3);
+  transition: transform .15s ease, background-color .2s ease;
+}
+.cele-donate-btn:hover { background: var(--amber-hover); transform: translateY(-1px); }
+.cele-donate-btn:active { transform: scale(.96); }
+
+/* Pháo giấy rơi khắp màn hình (tạo bằng JS, tự xóa sau vài giây) */
+.confetti-layer { position: fixed; inset: 0; z-index: 1070; overflow: hidden; pointer-events: none; }
+.confetti-piece {
+  position: absolute; top: -20px; width: 8px; height: 12px; border-radius: 2px; opacity: 0;
+  animation: confetti-fall 3s cubic-bezier(.25, .6, .45, 1) forwards;
+}
+.confetti-piece.is-round { width: 9px; height: 9px; border-radius: 50%; }
+.confetti-piece.is-strip { width: 5px; height: 16px; }
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--drift, 0), 105vh, 0) rotate(var(--spin, 540deg)); }
+}
 
 /* Modal Tài liệu & Ủng hộ */
 .support-modal .modal-content { border-radius: 20px; }
@@ -1225,7 +1295,9 @@ html.show-welcome .app-footer { display: none !important; }
   .sp-product { padding: .75rem 2.5rem .75rem .75rem; gap: .65rem; }
   .sp-product-icon { width: 36px; height: 36px; font-size: 1.05rem; }
   .sp-qr { max-width: 220px; }
-  .done-modal .modal-body { padding: 1.5rem 1.1rem 1.1rem; }
+  .cele-modal .modal-body { padding: 1.1rem 1.1rem 1.2rem; }
+  .cele-title { font-size: 1.3rem; }
+  .cele-donate { flex-direction: column; text-align: center; padding: .7rem; }
 }
 
 /* ---------- 12. Giảm chuyển động ---------- */
