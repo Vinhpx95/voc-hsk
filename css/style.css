@@ -484,7 +484,6 @@ button { -webkit-tap-highlight-color: transparent; }
 
 .card-corner { position: absolute; top: 1rem; display: flex; align-items: center; gap: .5rem; }
 .card-corner-start { left: 1rem; }
-.card-corner-end { right: 1.1rem; font-size: .8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .hsk-badge {
   display: inline-block; padding: .2rem .6rem;
   border-radius: 999px; background: var(--rose-soft); color: var(--rose-ink);

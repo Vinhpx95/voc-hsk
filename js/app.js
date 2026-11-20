@@ -629,7 +629,6 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#card-hsk').textContent = 'HSK ' + w.hsk_level;
     var layer = $('#swipe-layer');
     layer.classList.remove('enter'); void layer.offsetWidth; layer.classList.add('enter');
-    $('#card-pos').textContent = (state.index + 1) + ' / ' + state.deck.length;
 
     $('#back-hanzi').innerHTML = hanziToneHtml(w.hanzi, w.pinyin);
     $('#back-trad').textContent = w.traditional && w.traditional !== w.hanzi ? '(' + w.traditional + ')' : '';
