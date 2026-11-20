@@ -165,6 +165,21 @@ document.addEventListener('DOMContentLoaded', function () {
     bootstrap.Toast.getOrCreateInstance($('#app-toast'), { delay: 2500 }).show();
   }
 
+  /** Tổng kết khi vừa đạt mục tiêu ngày (1 lần/ngày): số liệu + "Học tiếp" + gợi ý Tài liệu & Ủng hộ */
+  function showDoneSummary(delay) {
+    setTimeout(function () {
+      var modal = $('#done-modal');
+      if (!modal || document.querySelector('.modal.show')) { toast('🎉 Hoàn thành mục tiêu hôm nay! Tiếp tục giữ chuỗi ngày học nhé.'); return; }
+      var d = Store.getDaily(), s = Store.summary();
+      $('#done-today').textContent = d.todayCount;
+      $('#done-streak').textContent = d.streakCount;
+      $('#done-mastered').textContent = s.mastered;
+      $('#done-sub').innerHTML = 'Bạn đã học <b>' + d.todayCount + '/' + d.dailyGoal + '</b> từ hôm nay' +
+        (d.streakCount > 1 ? ' và giữ chuỗi <b>' + d.streakCount + ' ngày</b> liên tiếp 🔥' : '') + '. Làm tốt lắm!';
+      bootstrap.Modal.getOrCreateInstance(modal).show();
+    }, delay || 0);
+  }
+
   function splitChars(text) {
     // Lọc dấu câu / khoảng trắng, chỉ giữ ký tự trong dải CJK 一-龥
     return Array.from(text || '').filter(function (c) { return CJK.test(c); });
@@ -614,9 +629,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function rate(kind) {
     var w = currentWord(); if (!w || !RATE_TEXT[kind]) return;
     var res = Store.rate(w.id, kind, w.set);
-    toast(res.goalReached
-      ? '🎉 Hoàn thành mục tiêu hôm nay! Tiếp tục giữ chuỗi ngày học nhé.'
-      : RATE_TEXT[kind] + ' · ôn lại ' + fromNow(res.progress.nextReview));
+    if (res.goalReached) showDoneSummary(0);
+    else toast(RATE_TEXT[kind] + ' · ôn lại ' + fromNow(res.progress.nextReview));
     renderDeckStats();
     renderList();
     if ($('#filter-mode').value === 'all') { go(1); }
@@ -748,7 +762,7 @@ document.addEventListener('DOMContentLoaded', function () {
       onComplete: function (summary) {
         var word = currentWord();
         if (word && Store.recordWriting(word.id, ch, summary.totalMistakes, word.set).goalReached) {
-          toast('🎉 Hoàn thành mục tiêu hôm nay!');
+          showDoneSummary(1500);   // đợi xem kết quả nét viết / chuyển chữ xong rồi mới hiện
         }
         renderWritingStats();
         var msg = summary.totalMistakes === 0

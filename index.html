@@ -69,6 +69,9 @@
         </button>
       </div>
       <div class="nav-actions">
+        <button class="nav-support support-entry" type="button" data-support-open="products" title="Tài liệu học & Ủng hộ Voc-Lang">
+          <i class="bi bi-gift"></i><span>Tài liệu &amp; Ủng hộ</span>
+        </button>
         <button class="icon-btn" id="btn-theme" type="button" title="Chuyển chế độ Sáng/Tối" aria-label="Chuyển chế độ Sáng/Tối">
           <i class="bi bi-moon-stars theme-icon-light"></i><i class="bi bi-sun theme-icon-dark"></i>
         </button>
@@ -300,6 +303,11 @@
 
   </main>
 
+  <footer class="container app-footer">
+    <span class="app-footer-note"><span class="brand-mark-sm zh-card">学</span> Voc-Lang · học miễn phí, không quảng cáo</span>
+    <button type="button" class="footer-support support-entry" data-support-open="products"><i class="bi bi-gift"></i> Tài liệu &amp; Ủng hộ</button>
+  </footer>
+
   <!-- Cài đặt -->
   <div class="modal fade" id="settings-modal" tabindex="-1" aria-labelledby="settings-title" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
@@ -361,6 +369,111 @@
     </div>
   </div>
 
+  <!-- Tổng kết khi hoàn thành mục tiêu ngày -->
+  <div class="modal fade done-modal" id="done-modal" tabindex="-1" aria-labelledby="done-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body">
+          <button type="button" class="btn-close done-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          <div class="done-hero"><span class="done-icon">🎉</span></div>
+          <h5 class="done-title" id="done-title">Hoàn thành mục tiêu hôm nay!</h5>
+          <p class="done-sub" id="done-sub"></p>
+          <div class="done-stats">
+            <div class="done-stat"><i class="bi bi-check2-circle"></i><b id="done-today">0</b><span>từ hôm nay</span></div>
+            <div class="done-stat"><i class="bi bi-fire"></i><b id="done-streak">0</b><span>ngày liên tiếp</span></div>
+            <div class="done-stat"><i class="bi bi-gem"></i><b id="done-mastered">0</b><span>đã thuộc</span></div>
+          </div>
+          <button type="button" class="btn btn-primary w-100 done-next" data-bs-dismiss="modal"><i class="bi bi-arrow-right-circle"></i> Học tiếp</button>
+          <div class="callout callout-amber done-support support-entry">
+            <div class="done-support-text">Muốn luyện cả khi không mở máy? Có sẵn <b>vở luyện viết PDF</b> và <b>audio nghe thụ động</b> giá chỉ từ 29k, hoặc mời tác giả một ly trà sữa 🧋 nếu Voc-Lang giúp ích cho bạn.</div>
+            <div class="done-support-actions">
+              <button type="button" class="btn btn-sm btn-amber-soft" data-support-open="products"><i class="bi bi-file-earmark-arrow-down"></i> Xem tài liệu</button>
+              <button type="button" class="btn btn-sm btn-link-amber" data-support-open="donate">Mời trà sữa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tài liệu & Ủng hộ (js/support.js, cấu hình ở js/support-config.js) -->
+  <div class="modal fade support-modal" id="support-modal" tabindex="-1" aria-labelledby="support-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="support-title"><i class="bi bi-gift"></i> Tài liệu &amp; Ủng hộ</h5>
+            <div class="sp-sub">Mọi khoản đóng góp giúp Voc-Lang luôn miễn phí cho người học</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body">
+          <div class="seg sp-tabs" role="tablist" aria-label="Chọn mục">
+            <button type="button" class="seg-btn active" data-sp-tab="products" role="tab" aria-selected="true"><i class="bi bi-journal-arrow-down"></i> Tài liệu bổ trợ</button>
+            <button type="button" class="seg-btn" data-sp-tab="donate" role="tab" aria-selected="false"><i class="bi bi-cup-hot"></i> Mời tác giả ly trà</button>
+          </div>
+
+          <div class="callout callout-amber sp-demo d-none" id="sp-demo">
+            <i class="bi bi-cone-striped"></i> <b>Thông tin chuyển khoản đang là mẫu.</b> Sửa ngân hàng, số tài khoản và tên chủ tài khoản trong <code>js/support-config.js</code>. Khi còn là mẫu, nút "Tài liệu &amp; Ủng hộ" chỉ hiện ở localhost.
+          </div>
+
+          <div class="sp-layout">
+            <div class="sp-main">
+              <div id="sp-pane-products" role="tabpanel">
+                <p class="sp-lead">Tài liệu in ra giấy và nghe khi đi đường, bổ trợ cho thẻ học trên web. Nhận file ngay sau khi chuyển khoản.</p>
+                <div class="sp-products" id="sp-products" role="radiogroup" aria-label="Gói tài liệu"></div>
+              </div>
+              <div id="sp-pane-donate" class="d-none" role="tabpanel">
+                <div class="sp-letter">
+                  <p><b>Voc-Lang 100% miễn phí và không quảng cáo.</b> Nếu trang giúp bạn nhớ thêm vài từ mỗi ngày, bạn có thể mời tác giả một ly trà. Mọi đóng góp dùng để duy trì tên miền, máy chủ và biên soạn thêm từ vựng, ví dụ mới.</p>
+                  <p class="mb-0">Cảm ơn bạn rất nhiều! 谢谢！</p>
+                </div>
+                <div class="sp-tiers" id="sp-tiers" role="group" aria-label="Mức ủng hộ"></div>
+                <div class="sp-custom d-none" id="sp-custom">
+                  <label for="sp-custom-input" class="form-label fw-semibold">Số tiền bạn muốn ủng hộ</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="sp-custom-input" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 100.000">
+                    <span class="input-group-text">đ</span>
+                  </div>
+                  <div class="form-text">Tối thiểu <span id="sp-min">10.000đ</span>.</div>
+                  <div class="sp-error d-none" id="sp-custom-error"><i class="bi bi-exclamation-circle"></i> Số tiền chưa đạt mức tối thiểu.</div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="sp-pay" aria-label="Thanh toán VietQR">
+              <div class="sp-pay-head">
+                <span class="sp-pay-for" id="sp-for"></span>
+                <span class="sp-pay-amount" id="sp-amount"></span>
+              </div>
+              <div class="sp-qr" id="sp-qr">
+                <img id="sp-qr-img" alt="" width="270" height="320" referrerpolicy="no-referrer">
+                <div class="sp-qr-state sp-qr-loading"><span class="spinner-border spinner-border-sm"></span> Đang tạo mã QR…</div>
+                <div class="sp-qr-state sp-qr-error"><i class="bi bi-wifi-off"></i> Không tải được mã QR. Bạn vẫn có thể chuyển khoản theo thông tin bên dưới.</div>
+                <div class="sp-qr-state sp-qr-empty"><i class="bi bi-qr-code"></i> Nhập số tiền để tạo mã QR</div>
+              </div>
+              <div class="sp-qr-actions">
+                <button type="button" class="btn btn-soft" id="btn-sp-download"><i class="bi bi-download"></i> Tải ảnh mã QR</button>
+                <button type="button" class="btn btn-soft" data-copy="account"><i class="bi bi-copy"></i> Sao chép Số tài khoản</button>
+              </div>
+              <div class="sp-hint"><i class="bi bi-phone"></i> Trên điện thoại: tải ảnh QR, mở app ngân hàng → Quét QR → chọn ảnh từ thư viện.</div>
+              <dl class="sp-info">
+                <div><dt>Ngân hàng</dt><dd id="sp-bank"></dd></div>
+                <div><dt>Số tài khoản</dt><dd class="sp-mono" id="sp-account"></dd></div>
+                <div><dt>Chủ tài khoản</dt><dd id="sp-holder"></dd></div>
+                <div><dt>Nội dung</dt><dd><span class="sp-mono" id="sp-message"></span><button type="button" class="sp-copy-mini" data-copy="message" title="Sao chép nội dung" aria-label="Sao chép nội dung chuyển khoản"><i class="bi bi-copy"></i></button></dd></div>
+              </dl>
+              <div class="sp-deliver" id="sp-deliver">
+                <p class="sp-deliver-note" id="sp-deliver-note"></p>
+                <a class="btn btn-primary w-100" id="btn-sp-deliver" href="#" target="_blank" rel="noopener"></a>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-container app-toasts">
     <div id="app-toast" class="toast" role="status"><div class="toast-body" id="toast-body"></div></div>
   </div>
@@ -370,6 +483,8 @@
   <script src="js/data/levels.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="js/support-config.js"></script>
+  <script src="js/support.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/account.js"></script>
   <script src="js/app.js"></script>
