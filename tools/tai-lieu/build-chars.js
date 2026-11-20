@@ -79,10 +79,31 @@ const reviewed = new Map();
 const reviewedFile = path.join(DATA, 'han-viet-da-soat.csv');
 if (fs.existsSync(reviewedFile)) {
   // cột: chu, am_chot (nhiều âm cách "/") — các cột khác bỏ qua
-  const rows = fs.readFileSync(reviewedFile, 'utf8').replace(/^\uFEFF/, '').split(/\r?\n/);
-  const head = rows.shift().split(',');
+  const rows = parseCsv(fs.readFileSync(reviewedFile, 'utf8').replace(/^\uFEFF/, ''));
+  const head = rows.shift().map(h => h.trim());
   const ci = head.indexOf('chu'), ai = head.indexOf('am_chot');
-  rows.forEach(r => { const f = r.split(','); if (f[ci] && f[ai]) reviewed.set(f[ci].trim(), f[ai].split('/').map(s => s.trim()).filter(Boolean)); });
+  rows.forEach(f => { if (f[ci] && f[ai]) reviewed.set(f[ci].trim(), f[ai].split('/').map(s => s.trim()).filter(Boolean)); });
+}
+/** CSV c\u00F3 ngo\u1EB7c k\u00E9p (Excel / Google Sheets xu\u1EA5t ra) */
+function parseCsv(text) {
+  const out = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') q = false;
+      else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cur); cur = '';
+      if (row.some(Boolean)) out.push(row);
+      row = [];
+    } else cur += ch;
+  }
+  row.push(cur); if (row.some(Boolean)) out.push(row);
+  return out;
 }
 
 /* So sánh âm: bỏ khác biệt vị trí dấu (hoà/hòa) và i/y cuối (kì/kỳ) */
