@@ -23,6 +23,15 @@ Thêm `?welcome` vào địa chỉ để xem thử luồng đăng nhập bằng 
 2. Chọn vị trí gần Việt Nam, ví dụ `asia-southeast1 (Singapore)` (không đổi được về sau) → **Production mode**.
 3. Tab **Rules**: xóa nội dung cũ, dán toàn bộ file [`firestore.rules`](firestore.rules) → **Publish**.
    Quy tắc này đảm bảo mỗi người chỉ đọc và ghi được dữ liệu của chính mình.
+4. **Tắt lập chỉ mục cho tiến độ từng từ** (giảm dung lượng 2–3 lần, để gói miễn phí chứa được nhiều tài khoản hơn):
+   tab **Indexes** → mục **Single field** (có thể tên là *Exemptions*) → **Add exemption**:
+   - *Collection ID*: `progress`
+   - *Field path*: `words`
+   - *Query scope*: tick cả **Collection** và **Collection group**
+   - Chuyển cả 3 kiểu chỉ mục (*Ascending*, *Descending*, *Arrays*) sang **Disabled** → **Save**.
+
+   App chỉ đọc nguyên tài liệu, không bao giờ tìm kiếm theo trường này, nên tắt không ảnh hưởng gì.
+   (Nếu dùng Firebase CLI: file [`firestore.indexes.json`](firestore.indexes.json) đã khai báo sẵn mục này.)
 
 ## 4. Lấy cấu hình web và dán vào dự án
 
@@ -45,13 +54,14 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 ## 5. Thử và đưa lên mạng
 
 - Thử trên máy: mở trang qua `http://localhost:...` (đăng nhập **không** chạy khi mở file `index.html` trực tiếp;
-  khi đó trang vẫn cho học như cũ).
+  khi đó nút Google báo lý do, người học vẫn dùng được "Học thử").
 - Push lên `main` → GitHub Pages cập nhật sau 1–2 phút → mở <https://vinhpx95.github.io/voc-hsk/>.
 
 ## Cách đồng bộ hoạt động
 
-- Mọi thứ tự động, không có nút đồng bộ. Trang luôn lưu trên máy trước, nên vẫn học được khi mất mạng; gặp lỗi thì tự thử lại sau 30 giây. Sau mỗi thay đổi khoảng 2 giây, hoặc khi chuyển
-  sang app khác, tiến độ được gửi lên. Khi mở trang hoặc quay lại tab, trang tải bản mới từ thiết bị khác về.
+- Mọi thứ tự động, không có nút đồng bộ. Trang luôn lưu trên máy trước, nên vẫn học được khi mất mạng; gặp lỗi thì
+  tự thử lại sau 30 giây. Thay đổi được gom và gửi lên 10 giây một lần, hoặc ngay khi rời trang / chuyển sang app khác.
+  Khi mở trang hoặc quay lại tab, trang tải bản mới từ thiết bị khác về.
 - Nếu học trên hai máy cùng lúc, từng từ giữ lần chấm điểm mới nhất. Thống kê tập viết được gộp theo từng chữ.
   Số từ học hôm nay được cộng gộp, các cấp đã mở không bị khóa lại.
 - Người **học thử** (không đăng nhập) mà sau đó đăng nhập: tiến độ đã học được đưa vào tài khoản.
@@ -71,5 +81,13 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 | Trình duyệt đã chặn cửa sổ đăng nhập | Cho phép cửa sổ bật lên (popup) cho trang |
 | Bạn đang mở trang trong một ứng dụng | Google chặn đăng nhập trong Zalo/Facebook. Mở bằng Chrome hoặc Safari |
 
-Gói miễn phí cho phép 50.000 lượt đọc và 20.000 lượt ghi Firestore mỗi ngày. Mỗi lần mở trang tốn khoảng 12 lượt
-đọc, và các lần ghi được gom lại, nên đủ cho hàng trăm người học mỗi ngày.
+## Gói miễn phí (Spark) đủ cho bao nhiêu người
+
+| Hạn mức Firestore | Mức dùng của Voc-Lang | Ước tính |
+|---|---|---|
+| 1 GiB dữ liệu | ~0,25 KB mỗi từ đã học (sau bước 3.4) | ~8.000 tài khoản học 500 từ |
+| 20.000 lượt ghi / ngày | ~20–30 lượt cho một buổi học 50 từ | ~700–1.000 buổi học mỗi ngày |
+| 50.000 lượt đọc / ngày | ~2–12 lượt mỗi lần mở trang | ~2.000 buổi học mỗi ngày |
+
+Vượt hạn mức thì Firestore tạm ngừng đến khi hạn mức được làm mới. Người học vẫn học bình thường (lưu trên máy) và tiến
+độ tự gửi bù sau. Đông hơn mức này thì chuyển sang gói Blaze (trả theo dùng, khoảng 0,18 USD cho mỗi 100.000 lượt ghi).

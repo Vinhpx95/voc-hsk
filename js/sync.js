@@ -3,7 +3,7 @@
  *
  * Nguyên tắc: Local-First. Ứng dụng luôn đọc/ghi localStorage (js/storage.js); mô-đun này
  *   - khi đăng nhập / mở lại trang / quay lại tab: tải bản trên đám mây, GỘP với bản trên máy rồi ghi lại;
- *   - khi dữ liệu trên máy đổi: gom 2 giây rồi chỉ gửi những từ đã thay đổi.
+ *   - khi dữ liệu trên máy đổi: gom 10 giây (hoặc khi rời trang/chuyển app) rồi chỉ gửi những từ đã thay đổi.
  *
  * Firestore:
  *   users/{uid}                 { name, email, daily, settings, resetAt, updatedAt }
@@ -20,7 +20,7 @@
 (function () {
   var SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var KEY_META = 'hoctq-sync';
-  var PUSH_DELAY = 2000;
+  var PUSH_DELAY = 10 * 1000;   // gom thay đổi 10 giây/lần để tiết kiệm lượt ghi (rời trang thì gửi ngay)
   var PULL_MIN_GAP = 20 * 1000;
 
   var cfg = window.FIREBASE_CONFIG || {};
