@@ -66,6 +66,54 @@ for (const line of fs.readFileSync(path.join(SRC, 'makemeahanzi', 'dictionary.tx
   if (line) { const o = JSON.parse(line); dict.set(o.character, o); }
 }
 
+/* ---------- Pinyin của từng chữ trong từ HSK (tách "yínháng" → yín + háng) ---------- */
+const TONE_BASE = { 'ā': 'a', 'á': 'a', 'ǎ': 'a', 'à': 'a', 'ē': 'e', 'é': 'e', 'ě': 'e', 'è': 'e', 'ī': 'i', 'í': 'i', 'ǐ': 'i', 'ì': 'i',
+  'ō': 'o', 'ó': 'o', 'ǒ': 'o', 'ò': 'o', 'ū': 'u', 'ú': 'u', 'ǔ': 'u', 'ù': 'u', 'ǖ': 'v', 'ǘ': 'v', 'ǚ': 'v', 'ǜ': 'v', 'ü': 'v',
+  'ń': 'n', 'ň': 'n', 'ǹ': 'n', 'ḿ': 'm' };
+const plainOf = s => [...s].map(ch => TONE_BASE[ch] || ch).join('');
+const SYLLABLES = new Set();
+for (const d of dict.values()) (d.pinyin || []).forEach(p => SYLLABLES.add(plainOf(p.toLowerCase())));
+['r', 'dei', 'shei'].forEach(s => SYLLABLES.add(s));   // r: âm cuốn lưỡi của 儿; děi (得), shéi (谁) thiếu trong từ điển MMAH
+function splitPinyin(hanzi, pinyin) {
+  const cs = [...hanzi].filter(c => CJK.test(c));
+  const toned = [...pinyin.toLowerCase().normalize('NFC')].filter(ch => /[a-z]/.test(ch) || TONE_BASE[ch]).join('');
+  const plain = plainOf(toned);
+  // Chọn cách tách hợp lệ (mọi phần là âm tiết pinyin) khớp nhiều nhất với âm đọc có trong từ điển của từng chữ
+  // (từ điển MMAH đôi khi thiếu âm, vd. 弹 tán, 刹 chà).
+  const memo = new Map();
+  function go(i, pos) {
+    if (i === cs.length) return pos === plain.length ? { parts: [], score: 0 } : null;
+    const k = i + ':' + pos;
+    if (memo.has(k)) return memo.get(k);
+    const own = new Set(((dict.get(cs[i]) || {}).pinyin || []).map(p => plainOf(p.toLowerCase())));
+    if (cs[i] === '儿') own.add('r');
+    let best = null;
+    for (let len = 6; len >= 1; len--) {
+      const s = plain.slice(pos, pos + len);
+      if (s.length !== len || !(own.has(s) || SYLLABLES.has(s))) continue;
+      const rest = go(i + 1, pos + len);
+      if (!rest) continue;
+      const score = rest.score + (own.has(s) ? 1 : 0);
+      if (!best || score > best.score) best = { parts: [[...toned].slice(pos, pos + len).join('')].concat(rest.parts), score };
+    }
+    memo.set(k, best);
+    return best;
+  }
+  const found = cs.length === 1 ? { parts: [toned] } : go(0, 0);
+  const parts = found && found.parts;
+  return parts ? cs.map((c, i) => [c, parts[i]]) : null;
+}
+const unsplit = [];
+for (const e of chars.values()) e.pinyinHsk = {};
+for (const l of LEVELS) for (const w of window.HSK_DATA[l]) {
+  const pairs = splitPinyin(w.hanzi, w.pinyin);
+  if (!pairs) { unsplit.push(w.hanzi + ' ' + w.pinyin); continue; }
+  for (const [c, p] of pairs) {
+    const e = chars.get(c);
+    (e.pinyinHsk[p] = e.pinyinHsk[p] || []).push(w.hanzi);
+  }
+}
+
 /* ---------- Âm Hán-Việt: Claude điền + đã soát ---------- */
 const claude = new Map();
 for (const line of fs.readFileSync(path.join(DATA, 'han-viet-claude.txt'), 'utf8').split('\n')) {
@@ -81,8 +129,12 @@ if (fs.existsSync(reviewedFile)) {
   // cột: chu, am_chot (nhiều âm cách "/") — các cột khác bỏ qua
   const rows = parseCsv(fs.readFileSync(reviewedFile, 'utf8').replace(/^\uFEFF/, ''));
   const head = rows.shift().map(h => h.trim());
-  const ci = head.indexOf('chu'), ai = head.indexOf('am_chot');
-  rows.forEach(f => { if (f[ci] && f[ai]) reviewed.set(f[ci].trim(), f[ai].split('/').map(s => s.trim()).filter(Boolean)); });
+  // Cột chữ: "char" (mẫu mới) hoặc "chu"; cột âm chốt: "admin_final_hv" hoặc "am_chot". Âm viết hoa "TRƯỜNG / TRƯỞNG" → lưu chữ thường.
+  const ci = Math.max(head.indexOf('char'), head.indexOf('chu'));
+  const ai = Math.max(head.indexOf('admin_final_hv'), head.indexOf('am_chot'));
+  rows.forEach(f => {
+    if (f[ci] && f[ai]) reviewed.set(f[ci].trim(), f[ai].split('/').map(s => s.trim().toLowerCase()).filter(Boolean));
+  });
 }
 /** CSV c\u00F3 ngo\u1EB7c k\u00E9p (Excel / Google Sheets xu\u1EA5t ra) */
 function parseCsv(text) {
@@ -131,7 +183,7 @@ for (const e of chars.values()) {
     char: e.char, order: e.order, level: e.level,
     hanViet: final, hanVietSource: reviewed.has(e.char) ? 'da-soat' : 'claude', hanVietCheck: status,
     unihanVi: u.readings, traditional: u.traditional,
-    pinyin: d.pinyin || [], radical: d.radical || '', decomposition: d.decomposition || '',
+    pinyin: d.pinyin || [], pinyinHsk: e.pinyinHsk, radical: d.radical || '', decomposition: d.decomposition || '',
     rsUnicode: (I[e.char] || {}).kRSUnicode || '', strokes: strokes.get(e.char) || 0,
     words: e.words
   });
@@ -145,4 +197,5 @@ console.log('Hán-Việt — khớp Unihan:', khop, '| lệch Unihan:', lech, '|
 console.log('Thiếu nét:', rows.filter(r => !r.strokes).map(r => r.char).join('') || 'không',
   '| thiếu pinyin:', rows.filter(r => !r.pinyin.length).map(r => r.char).join('') || 'không',
   '| thiếu bộ thủ:', rows.filter(r => !r.radical).map(r => r.char).join('') || 'không');
+console.log('Tách pinyin theo chữ: không tách được', unsplit.length, 'từ', unsplit.slice(0, 15).join(' | '));
 console.log('Ghi:', path.join(DATA, 'chu-han.json'));
