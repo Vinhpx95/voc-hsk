@@ -25,7 +25,7 @@ GitHub trước khi điền cấu hình**. Thêm `?welcome` vào địa chỉ đ
 3. Tab **Rules**: xóa nội dung cũ, dán toàn bộ file [`firestore.rules`](firestore.rules) → **Publish**.
    Quy tắc này đảm bảo mỗi người chỉ đọc và ghi được dữ liệu của chính mình.
 4. **Tắt lập chỉ mục cho tiến độ từng từ** (giảm dung lượng 2–3 lần, để gói miễn phí chứa được nhiều tài khoản hơn):
-   tab **Indexes** → mục **Single field** (có thể tên là *Exemptions*) → **Add exemption**:
+   tab **Indexes** → chọn mục **Automatic** ở góc phải (tên cũ: *Single field*) → **Add exemption**:
    - *Collection ID*: `progress`
    - *Field path*: `words`
    - *Query scope*: tick cả **Collection** và **Collection group**
