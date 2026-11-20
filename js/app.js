@@ -1245,7 +1245,10 @@ document.addEventListener('DOMContentLoaded', function () {
     Store.resetAll();
     bootstrap.Modal.getOrCreateInstance($('#reset-modal')).hide();
     $('#filter-mode').value = 'all';
-    refreshAll();
+    // Bắt đầu lại từ thẻ đầu tiên (không giữ vị trí thẻ đang xem như refreshAll)
+    listPage = 1;
+    renderHskFilter();
+    buildDeck();
     toast('Đã xóa toàn bộ tiến độ học tập.');
   });
 
