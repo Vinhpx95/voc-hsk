@@ -4,11 +4,11 @@
  *
  * Đây KHÔNG phải mật khẩu: mọi trang web dùng Firebase đều công khai các giá trị này.
  * Dữ liệu được bảo vệ bởi Firestore Rules (firestore.rules) — mỗi người chỉ đọc/ghi được dữ liệu của chính mình.
- * Để trống apiKey thì trang chạy ở chế độ không đăng nhập (tiến độ chỉ lưu trên trình duyệt).
+ * Dự án Firebase: voc-lang-hsk (gói Spark miễn phí).
  */
 window.FIREBASE_CONFIG = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  appId: ''
+  apiKey: 'AIzaSyDVKR7kvxWZpk50_59b6DgIlKdTKh5F6rw',
+  authDomain: 'voc-lang-hsk.firebaseapp.com',
+  projectId: 'voc-lang-hsk',
+  appId: '1:1078307973316:web:d8a142ac99d69c3a56c191'
 };
