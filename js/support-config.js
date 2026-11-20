@@ -2,9 +2,13 @@
  * Cấu hình "Tài liệu học tập" (#resources-modal) và "Mời tác giả ly trà" (#donate-modal), dùng chung PAYMENT_CONFIG.
  *
  * LƯU Ý: khi thông tin bên dưới còn là MẪU (số tài khoản 0123456789 / tên NGUYEN VAN A), các nút mở 2 cửa sổ này
- * tự ẩn trên trang thật (chỉ hiện khi chạy ở localhost để xem thử) → không ai chuyển nhầm vào tài khoản mẫu.
+ * tự ẩn trên trang thật (trừ khi SHOW_SAMPLE: true — bản xem thử có nhãn "MẪU"), localhost thì luôn hiện.
  */
 window.SUPPORT_CONFIG = {
+  // Xem thử trên trang thật khi thông tin còn là mẫu: hiện các nút, ảnh QR có nhãn "MẪU" và nhắc người dùng chưa chuyển khoản.
+  // Điền tài khoản thật rồi thì không cần quan tâm cờ này. Đặt false để ẩn hẳn các nút khi còn là mẫu.
+  SHOW_SAMPLE: true,
+
   PAYMENT_CONFIG: {
     // Mã ngân hàng theo VietQR (cột "code" hoặc "bin" tại https://api.vietqr.io/v2/banks), ví dụ: MB, VCB, TCB, ACB, 970422…
     bankId: 'MB',

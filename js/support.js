@@ -16,7 +16,7 @@
 
   var placeholder = P.accountNo === '0123456789' || P.accountName === 'NGUYEN VAN A' || !P.accountNo;
   var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === 'file:';
-  var visible = !placeholder || local;
+  var visible = !placeholder || local || C.SHOW_SAMPLE === true;
   if (visible) document.documentElement.classList.add('support-on');
 
   function $(s, root) { return (root || document).querySelector(s); }
@@ -77,14 +77,29 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   }
 
+  /** Ảnh QR tải về khi còn là thông tin mẫu: đóng dấu "MẪU · KHÔNG CHUYỂN KHOẢN" chéo qua ảnh */
+  function stampSample(ctx, w, h) {
+    ctx.save();
+    ctx.translate(w / 2, h * .42);
+    ctx.rotate(-Math.PI / 9);
+    ctx.fillStyle = 'rgba(225, 29, 72, .82)';
+    ctx.fillRect(-w, -h * .055, w * 2, h * .11);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold ' + Math.round(h * .05) + 'px "Be Vietnam Pro", system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('MẪU · KHÔNG CHUYỂN KHOẢN', 0, 0);
+    ctx.restore();
+  }
+
   /* ============================================================
    * Khung thanh toán VietQR — dùng chung cho cả 2 modal
    * ============================================================ */
   function PayPanel(root, modal) {
     root.innerHTML =
       '<div class="sp-pay-head"><span class="sp-pay-for"></span><span class="sp-pay-amount"></span></div>' +
-      '<div class="sp-qr">' +
+      '<div class="sp-qr' + (placeholder ? ' is-sample' : '') + '">' +
         '<img alt="" width="270" height="320" referrerpolicy="no-referrer">' +
+        (placeholder ? '<span class="sp-qr-sample" aria-hidden="true">MẪU</span>' : '') +
         '<div class="sp-qr-state sp-qr-loading"><span class="spinner-border spinner-border-sm"></span> Đang tạo mã QR…</div>' +
         '<div class="sp-qr-state sp-qr-error"><i class="bi bi-wifi-off"></i> Không tải được mã QR. Bạn vẫn có thể chuyển khoản theo thông tin bên dưới.</div>' +
         '<div class="sp-qr-state sp-qr-empty"><i class="bi bi-qr-code"></i> Nhập số tiền để tạo mã QR</div>' +
@@ -150,6 +165,7 @@
             var ctx = cv.getContext('2d');
             ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
             ctx.drawImage(im, 0, 0, cv.width, cv.height);
+            if (placeholder) stampSample(ctx, cv.width, cv.height);
             URL.revokeObjectURL(u);
             cv.toBlob(function (b) { b ? resolve(b) : reject(new Error('toBlob')); }, 'image/png');
           };
