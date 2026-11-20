@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#FAF9F5" id="meta-theme-color">
-  <title>Học Tiếng Trung – Flashcards & Luyện Viết</title>
+  <title>Voc-Lang – Học từ vựng tiếng Trung HSK</title>
   <script>
     /* Áp giao diện Sáng/Tối trước khi vẽ trang để không bị nháy màu */
     (function () {
@@ -17,6 +17,11 @@
       if (ui.meaning === false) root.classList.add('hide-meaning');
       if (ui.tone !== false) root.classList.add('tone-on');
       if (dark) document.getElementById('meta-theme-color').setAttribute('content', '#0F172A');
+      /* Chưa đăng nhập và chưa chọn học thử → hiện màn hình chào ngay từ đầu */
+      var sync = {};
+      try { sync = JSON.parse(localStorage.getItem('hoctq-sync')) || {}; } catch (e) { /* bỏ qua */ }
+      /* index.html?welcome: xem thử màn hình chào bất kỳ lúc nào */
+      if (/[?&]welcome(?:[=&]|$)/.test(location.search) || (sync.mode !== 'user' && sync.mode !== 'guest')) root.classList.add('show-welcome');
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,9 +33,35 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- ================= MÀN HÌNH CHÀO (chưa đăng nhập) ================= -->
+  <section class="welcome" id="welcome" aria-labelledby="welcome-title">
+    <div class="welcome-art zh-card" aria-hidden="true">学</div>
+    <div class="welcome-card">
+      <span class="brand-mark welcome-mark zh-card" aria-hidden="true">学</span>
+      <p class="welcome-eyebrow">Chào mừng bạn đến với khóa học tiếng Trung của <span class="text-nowrap">Voc-Lang</span></p>
+      <h1 class="welcome-title" id="welcome-title">Mỗi ngày một ít,<br>nhớ từ vựng HSK thật&nbsp;lâu</h1>
+      <p class="welcome-lead"><span id="welcome-count">12.207</span> từ vựng HSK 1–9 với thẻ ghi nhớ, phát âm chuẩn và luyện viết từng nét chữ.</p>
+
+      <button type="button" class="btn-google" id="btn-google">
+        <svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span class="btn-google-text">Tiếp tục với Google</span>
+        <span class="spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+      </button>
+      <div class="welcome-alert callout callout-amber d-none" id="welcome-alert" role="alert"></div>
+
+      <p class="welcome-free">
+        <i class="bi bi-gift" aria-hidden="true"></i>
+        <span><b>Hoàn toàn miễn phí.</b> Đăng nhập chỉ để lưu và theo dõi tiến độ quá trình học tập.</span>
+      </p>
+
+      <button type="button" class="welcome-guest" id="btn-guest">Học thử không cần đăng nhập <i class="bi bi-arrow-right"></i></button>
+      <p class="welcome-fine">Chúng tôi chỉ dùng tên và email Google để nhận diện tài khoản, không đăng bài hay truy cập dữ liệu nào khác của bạn.</p>
+    </div>
+  </section>
+
   <nav class="app-nav sticky-top">
     <div class="container app-nav-inner">
-      <span class="brand"><span class="brand-mark zh-card">学</span><span class="brand-text">Học Tiếng Trung</span></span>
+      <span class="brand"><span class="brand-mark zh-card">学</span><span class="brand-text">Voc-Lang</span></span>
       <div class="nav-switch" role="tablist" aria-label="Chuyển màn hình">
         <button class="nav-switch-btn active" data-bs-toggle="pill" data-bs-target="#tab-study" type="button" role="tab" aria-selected="true">
           <i class="bi bi-card-text"></i><span>Học</span>
@@ -46,6 +77,13 @@
         <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#settings-modal" title="Cài đặt" aria-label="Cài đặt">
           <i class="bi bi-gear"></i>
         </button>
+        <div class="dropdown account">
+          <button class="icon-btn account-btn" id="btn-account" type="button" data-bs-toggle="dropdown" data-bs-offset="0,8" aria-expanded="false" aria-label="Tài khoản">
+            <span class="avatar" id="account-avatar"><i class="bi bi-person"></i></span>
+            <span class="sync-dot" id="sync-dot" aria-hidden="true"></span>
+          </button>
+          <div class="dropdown-menu dropdown-menu-end account-menu" id="account-menu"></div>
+        </div>
       </div>
     </div>
   </nav>
@@ -292,7 +330,7 @@
           <div class="small text-muted-2 mb-3" id="settings-summary"></div>
           <hr>
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="small text-muted-2 me-auto">Dữ liệu học chỉ lưu trên trình duyệt này.</div>
+            <div class="small text-muted-2 me-auto" id="sync-note">Dữ liệu học chỉ lưu trên trình duyệt này.</div>
             <button type="button" class="btn btn-outline-danger" id="btn-open-reset">
               <i class="bi bi-arrow-counterclockwise"></i> Đặt lại tiến độ (Reset)
             </button>
@@ -315,7 +353,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
         <div class="modal-body">
-          <div class="callout callout-rose mb-0">Bạn có chắc chắn muốn xóa toàn bộ tiến độ học tập và chuỗi ngày học hiện tại không? Hành động này không thể hoàn tác.</div>
+          <div class="callout callout-rose mb-0">Bạn có chắc chắn muốn xóa toàn bộ tiến độ học tập và chuỗi ngày học hiện tại<span id="reset-scope"></span> không? Hành động này không thể hoàn tác.</div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-soft" data-bs-dismiss="modal">Hủy</button>
@@ -333,6 +371,9 @@
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7.3/dist/hanzi-writer.min.js"></script>
   <script src="js/data/levels.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/account.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

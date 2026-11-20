@@ -313,7 +313,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .nav-switch { display: inline-flex; gap: .25rem; margin-left: auto; padding: 3px; background: var(--surface-2); border-radius: 14px; }
 .nav-switch-btn {
-  display: inline-flex; align-items: center; gap: .4rem;
+  display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap;
   min-height: var(--tap); padding: 0 .9rem;
   border: 0; border-radius: var(--radius);
   background: transparent; color: var(--text-muted); font-weight: 600; font-size: .92rem;
@@ -758,6 +758,147 @@ html.is-writing, html.is-writing body { overscroll-behavior: none; }   /* tắt 
   transition: all .2s ease;
 }
 
+/* ---------- 9b. Màn hình chào & tài khoản ---------- */
+.welcome {
+  position: fixed; inset: 0; z-index: 1040;
+  display: none; align-items: center; justify-content: center;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  padding: calc(env(safe-area-inset-top) + 1.5rem) 1rem calc(env(safe-area-inset-bottom) + 1.5rem);
+  background:
+    radial-gradient(60% 45% at 88% 0%, rgba(var(--primary-rgb), .13), transparent 70%),
+    radial-gradient(45% 35% at 0% 100%, rgba(245, 158, 11, .10), transparent 70%),
+    var(--bg);
+}
+html.show-welcome .welcome { display: flex; }
+html.show-welcome body { overflow: hidden; }
+html.show-welcome .app-nav,
+html.show-welcome .app-main,
+html.show-welcome .app-toasts { display: none !important; }
+
+.welcome-art {
+  position: fixed; right: -4%; bottom: -10%;   /* fixed: không làm trang chào có thanh cuộn thừa */
+  font-size: min(78vw, 34rem); line-height: 1;
+  color: var(--primary); opacity: .06;
+  transform: rotate(-8deg);
+  pointer-events: none; user-select: none;
+}
+.welcome-card {
+  position: relative;
+  width: 100%; max-width: 28rem; margin: auto;
+  padding: 2.25rem 2rem 1.75rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  text-align: center;
+  animation: welcome-in .6s var(--ease) both;
+}
+@keyframes welcome-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.welcome-mark { width: 60px; height: 60px; border-radius: 18px; font-size: 2.1rem; margin-bottom: 1.25rem; }
+.welcome-eyebrow { margin: 0 0 .5rem; color: var(--primary-ink); font-size: .875rem; font-weight: 600; text-wrap: balance; }
+.welcome-title {
+  margin: 0 0 .75rem;
+  font-size: clamp(1.55rem, 5.6vw, 1.95rem); font-weight: 700; line-height: 1.3; letter-spacing: -.02em;
+  color: var(--bs-emphasis-color); text-wrap: balance;
+}
+.welcome-lead { margin: 0 auto 1.75rem; max-width: 23rem; color: var(--text-muted); line-height: 1.65; text-wrap: pretty; }
+
+/* Nút Google theo hướng dẫn thương hiệu (nền trắng / tối, logo G 4 màu) */
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: .75rem;
+  width: 100%; min-height: 52px; padding: 0 1.25rem;
+  background: #FFFFFF; color: #1F1F1F;
+  border: 1px solid #747775; border-radius: var(--radius);
+  font-size: 1rem; font-weight: 600;
+  transition: all .2s ease;
+}
+.btn-google:hover { background: #F7F8F8; box-shadow: 0 1px 3px rgba(60, 64, 67, .3), 0 4px 8px rgba(60, 64, 67, .12); }
+.btn-google:active { transform: scale(.985); }
+.btn-google:focus-visible { outline: 3px solid rgba(var(--primary-rgb), .45); outline-offset: 2px; }
+.btn-google:disabled { cursor: progress; opacity: .75; }
+.btn-google .g-logo { width: 20px; height: 20px; flex: none; }
+.btn-google-sm { min-height: var(--tap); font-size: .92rem; }
+[data-bs-theme="dark"] .btn-google { background: #131314; color: #E3E3E3; border-color: #8E918F; }
+[data-bs-theme="dark"] .btn-google:hover { background: #1B1C1E; box-shadow: 0 2px 10px rgba(0, 0, 0, .4); }
+
+.welcome-alert { margin: .875rem 0 0; text-align: left; font-size: .875rem; line-height: 1.55; }
+.welcome-alert .btn { min-height: 36px; margin-top: .5rem; }
+.welcome-free {
+  display: flex; gap: .65rem; align-items: flex-start;
+  margin: 1.25rem 0 0; padding: .75rem .9rem;
+  background: var(--primary-soft); border-radius: var(--radius);
+  text-align: left; font-size: .9rem; line-height: 1.6;
+}
+.welcome-free i { color: var(--primary); font-size: 1.1rem; line-height: 1.4; }
+.welcome-free b { color: var(--primary-ink); }
+.welcome-guest {
+  display: inline-flex; align-items: center; gap: .4rem;
+  min-height: var(--tap); margin-top: .75rem; padding: 0 .75rem;
+  background: none; border: 0; border-radius: var(--radius);
+  color: var(--primary-ink); font-weight: 600; font-size: .95rem;
+  transition: all .2s ease;
+}
+.welcome-guest:hover { background: var(--primary-soft); }
+.welcome-guest i { transition: transform .2s ease; }
+.welcome-guest:hover i { transform: translateX(3px); }
+.welcome-fine { margin: .5rem auto 0; max-width: 22rem; color: var(--text-muted); font-size: .78rem; line-height: 1.55; }
+
+/* Tài khoản trên thanh điều hướng */
+.account-btn { padding: 0; }
+.avatar {
+  display: inline-grid; place-items: center; flex: none;
+  width: 32px; height: 32px; border-radius: 50%; overflow: hidden;
+  background: var(--primary-soft); color: var(--primary-ink);
+  font-size: .95rem; font-weight: 700; line-height: 1;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-lg { width: 44px; height: 44px; font-size: 1.15rem; }
+.sync-dot {
+  position: absolute; right: 5px; bottom: 6px;
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid var(--surface); background: var(--text-muted);
+  display: none;
+}
+.account[data-mode="user"] .sync-dot { display: block; }
+.account[data-status="synced"] .sync-dot { background: var(--primary); }
+.account[data-status="pending"] .sync-dot,
+.account[data-status="syncing"] .sync-dot,
+.account[data-status="loading"] .sync-dot { background: var(--amber); }
+.account[data-status="syncing"] .sync-dot { animation: sync-pulse 1s ease-in-out infinite; }
+.account[data-status="offline"] .sync-dot,
+.account[data-status="error"] .sync-dot { background: var(--rose); }
+@keyframes sync-pulse { 50% { opacity: .35; } }
+
+.account-menu {
+  --bs-dropdown-bg: var(--surface);
+  --bs-dropdown-border-color: var(--border);
+  --bs-dropdown-border-radius: var(--radius-lg);
+  --bs-dropdown-link-color: var(--text);
+  --bs-dropdown-link-hover-bg: var(--surface-2);
+  --bs-dropdown-link-hover-color: var(--text);
+  --bs-dropdown-link-active-bg: var(--primary-soft);
+  --bs-dropdown-link-active-color: var(--primary-ink);
+  width: min(19rem, calc(100vw - 1.5rem));
+  padding: .5rem; box-shadow: var(--shadow);
+}
+.account-head { display: flex; align-items: center; gap: .75rem; padding: .5rem .5rem .75rem; min-width: 0; }
+.account-head > div { min-width: 0; }
+.account-name { font-weight: 700; line-height: 1.3; }
+.account-email { font-size: .82rem; color: var(--text-muted); overflow-wrap: anywhere; }
+.account-status {
+  display: flex; align-items: center; gap: .5rem;
+  margin: 0 .25rem .5rem; padding: .5rem .65rem;
+  background: var(--surface-2); border-radius: var(--radius);
+  font-size: .85rem; color: var(--text-muted);
+}
+.account-status .bi { font-size: 1rem; }
+.account-status.ok .bi { color: var(--primary); }
+.account-status.warn .bi { color: var(--amber); }
+.account-status.bad .bi { color: var(--rose); }
+.account-menu .dropdown-item { display: flex; align-items: center; gap: .6rem; min-height: var(--tap); border-radius: var(--radius); font-weight: 500; }
+.account-menu .dropdown-item .bi { color: var(--text-muted); }
+.account-guest { padding: .5rem .5rem .25rem; }
+.account-guest p { margin: 0 0 .75rem; font-size: .88rem; color: var(--text-muted); line-height: 1.55; }
+.account-guest .account-title { margin-bottom: .25rem; font-weight: 700; color: var(--text); }
+
 /* ---------- 10. Máy tính bảng & điện thoại (< 992px): 1 cột, thanh nút ghim đáy ---------- */
 @media (max-width: 991.98px) {
   :root {
@@ -813,6 +954,10 @@ html.is-writing, html.is-writing body { overscroll-behavior: none; }   /* tắt 
 
 /* ---------- 11. Điện thoại (< 576px) ---------- */
 @media (max-width: 575.98px) {
+  .welcome { align-items: flex-start; }
+  .welcome-card { background: transparent; border: 0; box-shadow: none; padding: 1.5rem .5rem 1rem; }
+  .welcome-art { right: -18%; bottom: -4%; }
+
   .brand-text { display: none; }
   .nav-switch { margin-left: .25rem; }
   .nav-switch-btn { padding: 0 .75rem; }
@@ -879,6 +1024,11 @@ html.is-writing, html.is-writing body { overscroll-behavior: none; }   /* tắt 
 @media (max-width: 359.98px) {
   .chip-toggle span { display: none; }
   .ctl-btn span { display: none; }
+}
+
+/* Điện thoại hẹp: thanh trên có thêm nút tài khoản → bỏ biểu tượng ở nút Học / Từ vựng */
+@media (max-width: 399.98px) {
+  .nav-switch-btn i { display: none; }
 }
 
 /* ---------- 12. Giảm chuyển động ---------- */

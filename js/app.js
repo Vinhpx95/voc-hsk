@@ -1076,6 +1076,11 @@ document.addEventListener('DOMContentLoaded', function () {
     renderDashboard();
     if (state.deck.length) { renderDeckStats(); renderReviewInfo(); }
   });
+  // Vừa nhận tiến độ từ thiết bị khác (js/sync.js) → vẽ lại bộ lọc cấp, bộ thẻ, danh sách
+  window.addEventListener('cloudsync', function () {
+    lastUnlocked = unlockedCount();
+    refreshAll();
+  });
   window.addEventListener('storage', function (e) {
     if (e.key && e.key.indexOf('hoctq.') !== 0) return;
     location.reload();   // tab khác vừa đổi tiến độ → đồng bộ lại

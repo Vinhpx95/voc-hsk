@@ -1,0 +1,10 @@
+rules_version = '2';
+// Voc-Lang: mỗi người chỉ đọc/ghi được dữ liệu học của chính mình (users/{uid} và mọi tài liệu con).
+// Dán toàn bộ nội dung này vào Firebase Console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

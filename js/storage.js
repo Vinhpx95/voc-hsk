@@ -1,5 +1,5 @@
 /*
- * Lưu trữ cục bộ (Local-First, không cần tài khoản):
+ * Lưu trữ cục bộ (Local-First). Khi đăng nhập Google, js/sync.js đồng bộ 3 khóa đầu lên Firestore:
  *   - wordProgress : tiến độ từng từ (SRS cơ bản) — key hoctq.progress
  *   - dailyStats   : số từ học hôm nay, mục tiêu ngày, chuỗi ngày học — key hoctq.daily
  *   - settings     : lộ trình mở khóa cấp (cấp bắt đầu, số cấp đã mở) — key hoctq.settings
@@ -23,9 +23,15 @@
       return raw ? JSON.parse(raw) : fallback;
     } catch (e) { return key in memory ? memory[key] : fallback; }
   }
+  var SYNCED = [KEY_PROGRESS, KEY_DAILY, KEY_SETTINGS];
+  var quiet = false;               // true khi đang nạp dữ liệu từ đám mây (không đẩy ngược lên)
   function writeJSON(key, value) {
-    try { window.localStorage.setItem(key, JSON.stringify(value)); return true; }
-    catch (e) { memory[key] = value; return false; }
+    var ok;
+    try { window.localStorage.setItem(key, JSON.stringify(value)); ok = true; }
+    catch (e) { memory[key] = value; ok = false; }
+    // Báo cho mô-đun đồng bộ (js/sync.js) biết dữ liệu học vừa đổi
+    if (!quiet && SYNCED.indexOf(key) >= 0 && typeof Store.onWrite === 'function') Store.onWrite(key);
+    return ok;
   }
   function removeKey(key) {
     try { window.localStorage.removeItem(key); } catch (e) { /* bỏ qua */ }
@@ -91,6 +97,7 @@
       todayCount: d.date === today ? (d.todayCount || 0) : 0,
       todayIds: d.date === today ? (d.todayIds || []) : [],
       dailyGoal: d.dailyGoal > 0 ? d.dailyGoal : DEFAULT_GOAL,
+      goalAt: d.goalAt || 0,  // lúc đổi mục tiêu gần nhất — để gộp dữ liệu giữa các thiết bị
       streakCount: d.streakCount || 0,
       lastStudyDate: d.lastStudyDate || ''
     };
@@ -200,7 +207,9 @@
     getDaily: daily,
     setDailyGoal: function (n) {
       var d = daily();
-      d.dailyGoal = Math.max(1, Math.min(500, Math.round(+n) || DEFAULT_GOAL));
+      var goal = Math.max(1, Math.min(500, Math.round(+n) || DEFAULT_GOAL));
+      if (goal !== d.dailyGoal) d.goalAt = Date.now();
+      d.dailyGoal = goal;
       writeJSON(KEY_DAILY, d);
       emit();
       return d.dailyGoal;
@@ -212,9 +221,14 @@
      */
     getSettings: function () {
       var s = readJSON(KEY_SETTINGS, null) || {};
-      return { startLevel: s.startLevel > 0 ? s.startLevel : 1, unlocked: s.unlocked > 0 ? s.unlocked : 1 };
+      return { startLevel: s.startLevel > 0 ? s.startLevel : 1, unlocked: s.unlocked > 0 ? s.unlocked : 1, startAt: s.startAt || 0 };
     },
-    saveSettings: function (s, silent) { writeJSON(KEY_SETTINGS, s); if (!silent) emit(); },
+    saveSettings: function (s, silent) {
+      var old = Store.getSettings();
+      if (s.startLevel !== old.startLevel) s.startAt = Date.now();   // để gộp giữa các thiết bị
+      writeJSON(KEY_SETTINGS, s);
+      if (!silent) emit();
+    },
 
     /** Đặt lại toàn bộ tiến độ học + chuỗi ngày + mục tiêu + lộ trình (giữ cache nét chữ) */
     resetAll: function () {
@@ -222,8 +236,35 @@
       removeKey(KEY_DAILY);
       removeKey(KEY_SETTINGS);
       cache = null;
+      if (typeof Store.onReset === 'function') Store.onReset();   // xóa cả bản trên đám mây
       emit();
     },
+
+    /* ---------- Đồng bộ (js/sync.js dùng) ---------- */
+    /** Dữ liệu học thô để gửi lên đám mây */
+    exportData: function () {
+      return { progress: all(), daily: readJSON(KEY_DAILY, null), settings: readJSON(KEY_SETTINGS, null) };
+    },
+    /** Ghi đè dữ liệu học bằng bản đã gộp từ đám mây (không kích hoạt đẩy ngược) */
+    importData: function (data) {
+      quiet = true;
+      try {
+        writeJSON(KEY_PROGRESS, data.progress || {});
+        if (data.daily) writeJSON(KEY_DAILY, data.daily); else removeKey(KEY_DAILY);
+        if (data.settings) writeJSON(KEY_SETTINGS, data.settings); else removeKey(KEY_SETTINGS);
+      } finally { quiet = false; }
+      cache = null;
+      emit();
+    },
+    /** Xóa dữ liệu học trên thiết bị này (khi đăng xuất / đổi tài khoản), giữ cache nét chữ */
+    clearLocal: function () {
+      removeKey(KEY_PROGRESS);
+      removeKey(KEY_DAILY);
+      removeKey(KEY_SETTINGS);
+      cache = null;
+    },
+    onWrite: null,
+    onReset: null,
 
     /* ---------- Cache nét chữ (để học offline sau lần tải đầu) ---------- */
     getStroke: function (ch) { return readJSON(KEY_STROKE + ch, null); },
