@@ -164,10 +164,16 @@
     return sdkPromise;
   }
 
+  /** "Học thử" chỉ có hiệu lực trong phiên (tab) đang mở */
+  function setGuestSession(v) {
+    try { if (v) sessionStorage.setItem('hoctq-guest', '1'); else sessionStorage.removeItem('hoctq-guest'); } catch (e) { /* bỏ qua */ }
+  }
+
   function onAuth(u) {
     authResolved = true;
     user = u;
     if (u) {
+      setGuestSession(false);
       // Dữ liệu trên máy thuộc tài khoản khác → xóa trước khi gộp. Dữ liệu học thử (chưa có uid) được giữ để gộp vào.
       if (meta.uid && meta.uid !== u.uid) { Store.clearLocal(); known = { words: {}, daily: null, settings: null }; meta.resetAt = 0; }
       meta.mode = 'user';
@@ -389,6 +395,7 @@
     signOut: function () {
       return flush().then(function () { return auth ? auth.signOut() : null; }).then(function () {
         Store.clearLocal();
+        setGuestSession(false);
         meta = { mode: '' };
         saveMeta();
         location.reload();
@@ -396,6 +403,7 @@
     },
     continueAsGuest: function () {
       meta.mode = 'guest'; saveMeta();
+      setGuestSession(true);
       fire('authchange', Cloud.info());
     },
     flush: flush,
@@ -406,6 +414,6 @@
   };
   window.Cloud = Cloud;
 
-  // Đã đăng nhập trước đó → khôi phục phiên và đồng bộ. Chưa chọn chế độ → tải sẵn SDK cho nút "Tiếp tục với Google".
-  if (meta.mode !== 'guest' && configured && !isFile) loadSdk().catch(function () { /* mất mạng: vẫn học được trên máy */ });
+  // Đã đăng nhập trước đó → khôi phục phiên và đồng bộ. Đang ở màn hình chào → tải sẵn SDK cho nút "Tiếp tục với Google".
+  if ((meta.mode === 'user' || document.documentElement.classList.contains('show-welcome')) && configured && !isFile) loadSdk().catch(function () { /* mất mạng: vẫn học được trên máy */ });
 })();

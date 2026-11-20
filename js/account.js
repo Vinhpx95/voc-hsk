@@ -24,25 +24,27 @@
   var total = (window.HSK_LEVELS || []).reduce(function (n, l) { return n + (l.count || 0); }, 0);
   if (total) $('#welcome-count').textContent = total.toLocaleString('vi-VN');
 
-  /* Chưa cấu hình Firebase hoặc mở bằng file:// → không có đăng nhập, học như trước (không hiện màn hình chào).
+  /* Chưa cấu hình Firebase hoặc mở bằng file:// → chưa đăng nhập được: màn hình chào vẫn hiện, nút Google báo lý do.
    * Riêng index.html?welcome là BẢN XEM THỬ: "Tiếp tục với Google" đăng nhập bằng tài khoản mẫu (không gọi Google,
    * không đồng bộ) để xem avatar, menu tài khoản và Đăng xuất → quay lại màn hình chào. */
   if (!Cloud.canSignIn()) {
-    if (!/[?&]welcome(?:[=&]|$)/.test(location.search)) {
-      root.classList.remove('show-welcome');
-      $('.account').classList.add('d-none');
-      return;
-    }
+    var preview = /[?&]welcome(?:[=&]|$)/.test(location.search);
     var GUEST = { mode: 'guest', status: 'idle' };
     var DEMO = { mode: 'user', signedIn: true, status: 'synced', name: 'Người học Voc-Lang', email: 'ban@gmail.com', photo: '', syncedAt: Date.now() };
     render(GUEST);
     $('#btn-google').addEventListener('click', function () {
+      if (!preview) {
+        alertBox(Cloud.isFile
+          ? 'Đăng nhập Google chỉ hoạt động khi mở trang qua địa chỉ web (ví dụ <b>vinhpx95.github.io/voc-hsk</b>). Bạn vẫn có thể học thử ngay bên dưới.'
+          : 'Đăng nhập Google đang được thiết lập và sẽ sớm có. Trong lúc chờ, bạn có thể học thử, tiến độ được lưu trên trình duyệt này.');
+        return;
+      }
       DEMO.syncedAt = Date.now();
       render(DEMO);
       showWelcome(false);
       toast('<b>Bản xem thử:</b> đã đăng nhập bằng tài khoản mẫu. Khi bật Firebase, đây sẽ là tên và ảnh Google của người học.');
     });
-    $('#btn-guest').addEventListener('click', function () { render(GUEST); showWelcome(false); });
+    $('#btn-guest').addEventListener('click', function () { Cloud.continueAsGuest(); render(GUEST); showWelcome(false); });
     document.addEventListener('click', function (e) {
       var el = e.target.closest('[data-act]');
       if (!el) return;

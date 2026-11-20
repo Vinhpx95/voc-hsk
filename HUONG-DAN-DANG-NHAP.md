@@ -1,8 +1,9 @@
 # Bật đăng nhập Google cho Voc-Lang (Firebase)
 
 Voc-Lang dùng **Firebase** (gói miễn phí Spark) để đăng nhập Google và lưu tiến độ học lên mây.
-Mất khoảng 10 phút, làm một lần. Chừng nào `js/firebase-config.js` còn để trống, trang vẫn chạy như cũ:
-không có màn hình chào, tiến độ chỉ lưu trên trình duyệt.
+Mất khoảng 10 phút, làm một lần. Chừng nào `js/firebase-config.js` còn để trống, người chưa đăng nhập vẫn thấy
+màn hình chào, nhưng nút Google chỉ báo "đang được thiết lập" và người học dùng "Học thử" (tiến độ lưu trên trình duyệt).
+Thêm `?welcome` vào địa chỉ để xem thử luồng đăng nhập bằng tài khoản mẫu (avatar, menu, đăng xuất).
 
 ## 1. Tạo dự án
 
