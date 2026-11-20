@@ -17,12 +17,10 @@
       if (ui.meaning === false) root.classList.add('hide-meaning');
       if (ui.tone !== false) root.classList.add('tone-on');
       if (dark) document.getElementById('meta-theme-color').setAttribute('content', '#0F172A');
-      /* Chưa đăng nhập → luôn mở màn hình chào. "Học thử" chỉ bỏ qua màn hình chào trong phiên đang mở (sessionStorage),
-         lần sau mở trang sẽ thấy lại. */
-      var sync = {}, guest = false;
+      /* Bắt buộc đăng nhập: chưa đăng nhập → luôn mở màn hình chào (index.html?welcome: bản xem thử) */
+      var sync = {};
       try { sync = JSON.parse(localStorage.getItem('hoctq-sync')) || {}; } catch (e) { /* bỏ qua */ }
-      try { guest = sessionStorage.getItem('hoctq-guest') === '1'; } catch (e) { /* bỏ qua */ }
-      if (/[?&]welcome(?:[=&]|$)/.test(location.search) || (sync.mode !== 'user' && !guest)) root.classList.add('show-welcome');
+      if (/[?&]welcome(?:[=&]|$)/.test(location.search) || sync.mode !== 'user') root.classList.add('show-welcome');
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,7 +53,6 @@
         <span><b>Hoàn toàn miễn phí.</b> Đăng nhập chỉ để lưu và theo dõi tiến độ quá trình học tập.</span>
       </p>
 
-      <button type="button" class="welcome-guest" id="btn-guest">Học thử không cần đăng nhập <i class="bi bi-arrow-right"></i></button>
       <p class="welcome-fine">Chúng tôi chỉ dùng tên và email Google để nhận diện tài khoản, không đăng bài hay truy cập dữ liệu nào khác của bạn.</p>
     </div>
   </section>

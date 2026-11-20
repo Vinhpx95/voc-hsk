@@ -11,7 +11,7 @@
  *     — chia theo cấp HSK để mỗi tài liệu < 1 MB; mỗi từ là một chuỗi để không vượt giới hạn 20.000 trường/tài liệu
  *
  * Trạng thái trên máy (localStorage 'hoctq-sync', không có dấu chấm để không kích hoạt tải lại giữa các tab):
- *   { mode: 'user' | 'guest' | '', uid, name, email, photo, resetAt, syncedAt }
+ *   { mode: 'user' | '', uid, name, email, photo, resetAt, syncedAt }
  *
  * Phát sự kiện window:
  *   'authchange' — đổi trạng thái đăng nhập / đồng bộ (detail = Cloud.info())
@@ -164,17 +164,11 @@
     return sdkPromise;
   }
 
-  /** "Học thử" chỉ có hiệu lực trong phiên (tab) đang mở */
-  function setGuestSession(v) {
-    try { if (v) sessionStorage.setItem('hoctq-guest', '1'); else sessionStorage.removeItem('hoctq-guest'); } catch (e) { /* bỏ qua */ }
-  }
-
   function onAuth(u) {
     authResolved = true;
     user = u;
     if (u) {
-      setGuestSession(false);
-      // Dữ liệu trên máy thuộc tài khoản khác → xóa trước khi gộp. Dữ liệu học thử (chưa có uid) được giữ để gộp vào.
+      // Dữ liệu trên máy thuộc tài khoản khác → xóa trước khi gộp. Dữ liệu cũ chưa gắn tài khoản (chưa có uid) được giữ để gộp vào.
       if (meta.uid && meta.uid !== u.uid) { Store.clearLocal(); known = { words: {}, daily: null, settings: null }; meta.resetAt = 0; }
       meta.mode = 'user';
       meta.uid = u.uid;
@@ -395,16 +389,10 @@
     signOut: function () {
       return flush().then(function () { return auth ? auth.signOut() : null; }).then(function () {
         Store.clearLocal();
-        setGuestSession(false);
         meta = { mode: '' };
         saveMeta();
         location.reload();
       });
-    },
-    continueAsGuest: function () {
-      meta.mode = 'guest'; saveMeta();
-      setGuestSession(true);
-      fire('authchange', Cloud.info());
     },
     flush: flush,
     syncNow: function () { lastPull = 0; return flush().then(function () { return pull(true); }); },

@@ -10,7 +10,6 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
-  var G_LOGO = $('#btn-google .g-logo').outerHTML;
 
   function toast(msg) {
     $('#toast-body').innerHTML = msg;
@@ -24,19 +23,20 @@
   var total = (window.HSK_LEVELS || []).reduce(function (n, l) { return n + (l.count || 0); }, 0);
   if (total) $('#welcome-count').textContent = total.toLocaleString('vi-VN');
 
-  /* Chưa cấu hình Firebase hoặc mở bằng file:// → chưa đăng nhập được: màn hình chào vẫn hiện, nút Google báo lý do.
+  /* Bắt buộc đăng nhập: chưa đăng nhập thì chỉ thấy màn hình chào.
+   * Chưa cấu hình Firebase hoặc mở bằng file:// → chưa đăng nhập được: nút Google báo lý do.
    * Riêng index.html?welcome là BẢN XEM THỬ: "Tiếp tục với Google" đăng nhập bằng tài khoản mẫu (không gọi Google,
    * không đồng bộ) để xem avatar, menu tài khoản và Đăng xuất → quay lại màn hình chào. */
   if (!Cloud.canSignIn()) {
     var preview = /[?&]welcome(?:[=&]|$)/.test(location.search);
-    var GUEST = { mode: 'guest', status: 'idle' };
+    var SIGNED_OUT = { mode: '', status: 'idle' };
     var DEMO = { mode: 'user', signedIn: true, status: 'synced', name: 'Người học Voc-Lang', email: 'ban@gmail.com', photo: '', syncedAt: Date.now() };
-    render(GUEST);
+    render(SIGNED_OUT);
     $('#btn-google').addEventListener('click', function () {
       if (!preview) {
         alertBox(Cloud.isFile
-          ? 'Đăng nhập Google chỉ hoạt động khi mở trang qua địa chỉ web (ví dụ <b>vinhpx95.github.io/voc-hsk</b>). Bạn vẫn có thể học thử ngay bên dưới.'
-          : 'Đăng nhập Google đang được thiết lập và sẽ sớm có. Trong lúc chờ, bạn có thể học thử, tiến độ được lưu trên trình duyệt này.');
+          ? 'Đăng nhập Google chỉ hoạt động khi mở trang qua địa chỉ web, ví dụ <b>vinhpx95.github.io/voc-hsk</b>.'
+          : 'Đăng nhập Google đang được thiết lập và sẽ sớm có. Bạn vui lòng quay lại sau ít phút.');
         return;
       }
       DEMO.syncedAt = Date.now();
@@ -44,18 +44,12 @@
       showWelcome(false);
       toast('<b>Bản xem thử:</b> đã đăng nhập bằng tài khoản mẫu. Khi bật Firebase, đây sẽ là tên và ảnh Google của người học.');
     });
-    $('#btn-guest').addEventListener('click', function () { Cloud.continueAsGuest(); render(GUEST); showWelcome(false); });
     document.addEventListener('click', function (e) {
-      var el = e.target.closest('[data-act]');
-      if (!el) return;
+      if (!e.target.closest('[data-act="signout"]')) return;
       e.preventDefault();
-      var act = el.dataset.act;
-      if (act === 'signin' || act === 'signout') {
-        var m = bootstrap.Modal.getInstance($('#settings-modal')); if (m) m.hide();
-        if (act === 'signout') render(GUEST);
-        showWelcome(true);
-        alertBox('');
-      }
+      render(SIGNED_OUT);
+      showWelcome(true);
+      alertBox('');
     });
     return;
   }
@@ -123,11 +117,6 @@
   }
 
   $('#btn-google').addEventListener('click', signIn);
-  $('#btn-guest').addEventListener('click', function () {
-    Cloud.continueAsGuest();
-    showWelcome(false);
-    toast('Bạn có thể đăng nhập bất cứ lúc nào ở biểu tượng <i class="bi bi-person"></i> góc trên bên phải.');
-  });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-copy-link]');
     if (!b) return;
@@ -185,16 +174,11 @@
       $('#sync-note').innerHTML = '<i class="bi bi-cloud-check"></i> Tiến độ được đồng bộ với tài khoản <b>' + esc(info.email || info.name) + '</b>.';
       $('#reset-scope').textContent = ' trên mọi thiết bị đã đăng nhập';
     } else {
+      // Chưa đăng nhập: trang học đang bị màn hình chào che, chỉ cần đặt lại về trạng thái trống
       $('#account-avatar').outerHTML = '<span id="account-avatar" class="avatar"><i class="bi bi-person"></i></span>';
-      $('#btn-account').title = 'Đăng nhập';
-      $('#account-menu').innerHTML =
-        '<div class="account-guest">' +
-          '<p class="account-title">Bạn đang học không đăng nhập</p>' +
-          '<p>Tiến độ chỉ lưu trên trình duyệt này. Đăng nhập để giữ tiến độ và học tiếp trên cả máy tính lẫn điện thoại. Miễn phí.</p>' +
-          '<button type="button" class="btn-google btn-google-sm" data-act="signin">' + G_LOGO +
-            '<span>Tiếp tục với Google</span></button>' +
-        '</div>';
-      $('#sync-note').innerHTML = 'Tiến độ chỉ lưu trên trình duyệt này. <a href="#" data-act="signin">Đăng nhập</a> để đồng bộ giữa các thiết bị.';
+      $('#btn-account').title = '';
+      $('#account-menu').innerHTML = '';
+      $('#sync-note').innerHTML = '';
       $('#reset-scope').textContent = '';
     }
   }
@@ -202,13 +186,7 @@
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
     if (!el) return;
-    var act = el.dataset.act;
-    if (act === 'signin') {
-      e.preventDefault();
-      var m = bootstrap.Modal.getInstance($('#settings-modal')); if (m) m.hide();
-      showWelcome(true);
-      alertBox('');
-    } else if (act === 'signout') {
+    if (el.dataset.act === 'signout') {
       Cloud.flush().then(function () {
         var st = Cloud.info().status;
         if ((st === 'offline' || st === 'error') &&
@@ -222,7 +200,7 @@
     var info = e.detail || Cloud.info();
     render(info);
     if (info.signedIn) showWelcome(false);
-    else if (info.authResolved && !info.mode) showWelcome(true);   // phiên đăng nhập hết hạn
+    else if (info.authResolved) showWelcome(true);   // chưa đăng nhập / phiên đăng nhập hết hạn
   });
   render();
 })();

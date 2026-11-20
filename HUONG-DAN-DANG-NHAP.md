@@ -1,9 +1,10 @@
 # Bật đăng nhập Google cho Voc-Lang (Firebase)
 
 Voc-Lang dùng **Firebase** (gói miễn phí Spark) để đăng nhập Google và lưu tiến độ học lên mây.
-Mất khoảng 10 phút, làm một lần. Chừng nào `js/firebase-config.js` còn để trống, người chưa đăng nhập vẫn thấy
-màn hình chào, nhưng nút Google chỉ báo "đang được thiết lập" và người học dùng "Học thử" (tiến độ lưu trên trình duyệt).
-Thêm `?welcome` vào địa chỉ để xem thử luồng đăng nhập bằng tài khoản mẫu (avatar, menu, đăng xuất).
+Mất khoảng 10 phút, làm một lần. **Bắt buộc đăng nhập** mới vào học được. Chừng nào `js/firebase-config.js` còn
+để trống, ai mở trang cũng chỉ thấy màn hình chào và nút Google báo "đang được thiết lập", nên **đừng push lên
+GitHub trước khi điền cấu hình**. Thêm `?welcome` vào địa chỉ để xem thử luồng đăng nhập bằng tài khoản mẫu
+(avatar, menu, đăng xuất).
 
 ## 1. Tạo dự án
 
@@ -53,8 +54,8 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 
 ## 5. Thử và đưa lên mạng
 
-- Thử trên máy: mở trang qua `http://localhost:...` (đăng nhập **không** chạy khi mở file `index.html` trực tiếp;
-  khi đó nút Google báo lý do, người học vẫn dùng được "Học thử").
+- Thử trên máy: mở trang qua `http://localhost:...`. Đăng nhập **không** chạy khi mở file `index.html` trực tiếp,
+  nên từ giờ muốn học trên máy thì mở qua localhost hoặc GitHub Pages.
 - Push lên `main` → GitHub Pages cập nhật sau 1–2 phút → mở <https://vinhpx95.github.io/voc-hsk/>.
 
 ## Cách đồng bộ hoạt động
@@ -64,7 +65,7 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
   Khi mở trang hoặc quay lại tab, trang tải bản mới từ thiết bị khác về.
 - Nếu học trên hai máy cùng lúc, từng từ giữ lần chấm điểm mới nhất. Thống kê tập viết được gộp theo từng chữ.
   Số từ học hôm nay được cộng gộp, các cấp đã mở không bị khóa lại.
-- Người **học thử** (không đăng nhập) mà sau đó đăng nhập: tiến độ đã học được đưa vào tài khoản.
+- Tiến độ đã học trên trình duyệt từ trước khi có đăng nhập được đưa vào tài khoản ở lần đăng nhập đầu tiên.
 - **Đăng xuất**: trước khi đăng xuất, tiến độ được gửi lên tài khoản rồi mới xóa khỏi máy, nên máy dùng chung không
   lộ dữ liệu.
 - **Đặt lại tiến độ** khi đã đăng nhập sẽ xóa trên mọi thiết bị.
