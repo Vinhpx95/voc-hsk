@@ -1017,7 +1017,7 @@ html.show-welcome .app-toasts { display: none !important; }
   .nav-switch-btn i { display: none; }
 }
 
-/* ---------- 11c. Tài liệu & Ủng hộ (#support-modal), chúc mừng (#cele-modal) ---------- */
+/* ---------- 11c. Tài liệu học tập (#resources-modal), Mời tác giả ly trà (#donate-modal), chúc mừng (#cele-modal) ---------- */
 /* Thông tin chuyển khoản còn là mẫu → ẩn mọi lối vào trên trang thật (js/support.js gắn .support-on) */
 html:not(.support-on) .support-entry { display: none !important; }
 
@@ -1032,6 +1032,49 @@ html:not(.support-on) .support-entry { display: none !important; }
 .nav-support:hover { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .nav-support:active { transform: scale(.96); }
 .nav-support i { font-size: 1rem; }
+
+/* Lối vào theo ngữ cảnh — chỉ ở tab Từ vựng, không đặt trong màn đang học thẻ / tập viết */
+.res-promo {
+  display: flex; align-items: center; gap: .85rem; width: 100%;
+  padding: .85rem 1.25rem; border: 0; border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: linear-gradient(90deg, var(--primary-soft), transparent 75%);
+  color: var(--text); text-align: left;
+  transition: background-color .2s ease;
+}
+.res-promo:hover { background-color: var(--surface-2); }
+.res-promo-icon {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+  background: var(--surface); color: var(--primary-ink); font-size: 1.15rem; box-shadow: var(--shadow-sm);
+}
+.res-promo-text { display: flex; flex-direction: column; gap: .1rem; min-width: 0; flex: 1; }
+.res-promo-text b { font-size: .92rem; color: var(--bs-emphasis-color); }
+.res-promo-text span { font-size: .8rem; line-height: 1.4; color: var(--text-muted); }
+.res-promo-cta { flex: none; font-size: .85rem; font-weight: 600; color: var(--primary-ink); white-space: nowrap; }
+.res-promo:hover .res-promo-cta i { transform: translateX(3px); }
+.res-promo-cta i { display: inline-block; transition: transform .2s ease; }
+
+.res-hint {
+  display: flex; align-items: center; gap: .6rem; width: 100%; margin-top: 1rem;
+  padding: .8rem 1rem; border: 1px dashed rgba(var(--primary-rgb), .45); border-radius: var(--radius);
+  background: transparent; color: var(--primary-ink); font-size: .9rem; font-weight: 600; text-align: left;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.res-hint:hover { background: var(--primary-soft); border-style: solid; }
+.res-hint .bi-file-earmark-pdf { font-size: 1.1rem; }
+.res-hint span { flex: 1; }
+.res-hint-arrow { transition: transform .2s ease; }
+.res-hint:hover .res-hint-arrow { transform: translateX(3px); }
+
+.app-footer { display: flex; justify-content: center; margin-top: 1.5rem; padding-top: .75rem; border-top: 1px solid var(--border); }
+.footer-donate {
+  display: inline-flex; align-items: center; gap: .35rem; min-height: 36px; padding: 0 .75rem;
+  border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); font-size: .82rem;
+  transition: color .2s ease, background-color .2s ease;
+}
+.footer-donate:hover { color: var(--amber-ink); background: var(--amber-soft); }
+
+#donate-modal .sp-tiers { padding-top: .35rem; }
 
 /* Chúc mừng khi xong một mục tiêu (#cele-modal) */
 .cele-modal .modal-dialog { max-width: 400px; }
@@ -1143,15 +1186,13 @@ html:not(.support-on) .support-entry { display: none !important; }
   100% { opacity: 0; transform: translate3d(var(--drift, 0), 105vh, 0) rotate(var(--spin, 540deg)); }
 }
 
-/* Modal Tài liệu & Ủng hộ */
+/* Khung chung của 2 modal Tài liệu học tập / Mời tác giả ly trà */
 .support-modal .modal-content { border-radius: 20px; }
 .support-modal .modal-header { align-items: flex-start; padding: 1.1rem 1.25rem .9rem; }
 .support-modal .modal-title { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--bs-emphasis-color); }
 .support-modal .modal-title i { color: var(--primary); }
 .sp-sub { margin-top: .15rem; font-size: .82rem; color: var(--text-muted); }
 .support-modal .modal-body { padding: 1rem 1.25rem 1.25rem; }
-.sp-tabs { display: flex; width: 100%; margin-bottom: 1rem; }
-.sp-tabs .seg-btn { flex: 1; justify-content: center; }
 .sp-demo { font-size: .85rem; }
 .sp-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1.25rem; align-items: start; }
 .sp-lead { margin-bottom: .75rem; color: var(--text-muted); font-size: .9rem; }
@@ -1265,8 +1306,10 @@ html:not(.support-on) .support-entry { display: none !important; }
   .nav-support { display: none; }     /* điện thoại: mở từ menu tài khoản */
   .support-modal .modal-header { padding: 1rem 1rem .8rem; }
   .support-modal .modal-body { padding: .875rem 1rem 1rem; }
-  .sp-tabs .seg-btn { padding: 0 .5rem; font-size: .88rem; }
   .sp-tiers { grid-template-columns: 1fr 1fr; gap: .85rem .5rem; padding-top: .35rem; }
+  .res-promo { flex-wrap: wrap; align-items: flex-start; gap: .25rem .75rem; padding: .85rem 1rem; }
+  .res-promo-text { flex-basis: calc(100% - 3.25rem); }
+  .res-promo-cta { margin-left: calc(40px + .75rem); }
   .sp-product { padding: .75rem 2.5rem .75rem .75rem; gap: .65rem; }
   .sp-product-icon { width: 36px; height: 36px; font-size: 1.05rem; }
   .sp-qr { max-width: 220px; }

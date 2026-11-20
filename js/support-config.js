@@ -1,7 +1,7 @@
 /*
- * Cấu hình "Tài liệu & Ủng hộ" — sửa file này để đổi tài khoản nhận tiền, link nhận file và các gói tài liệu.
+ * Cấu hình "Tài liệu học tập" (#resources-modal) và "Mời tác giả ly trà" (#donate-modal), dùng chung PAYMENT_CONFIG.
  *
- * LƯU Ý: khi thông tin bên dưới còn là MẪU (số tài khoản 0123456789 / tên NGUYEN VAN A), nút "Tài liệu & Ủng hộ"
+ * LƯU Ý: khi thông tin bên dưới còn là MẪU (số tài khoản 0123456789 / tên NGUYEN VAN A), các nút mở 2 cửa sổ này
  * tự ẩn trên trang thật (chỉ hiện khi chạy ở localhost để xem thử) → không ai chuyển nhầm vào tài khoản mẫu.
  */
 window.SUPPORT_CONFIG = {

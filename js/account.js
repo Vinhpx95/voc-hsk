@@ -170,7 +170,8 @@
           '<div><div class="account-name">' + esc(info.name || 'Tài khoản Google') + '</div>' +
           '<div class="account-email">' + esc(info.email) + '</div></div></div>' +
         '<div class="account-status ' + st.cls + '"><i class="bi ' + st.icon + '"></i><span>' + st.text + '</span></div>' +
-        '<button type="button" class="dropdown-item support-entry" data-support-open="products"><i class="bi bi-gift"></i> Tài liệu &amp; Ủng hộ</button>' +
+        '<button type="button" class="dropdown-item support-entry d-sm-none" data-support-open="resources"><i class="bi bi-journal-bookmark"></i> Tài liệu học tập</button>' +
+        '<button type="button" class="dropdown-item support-entry" data-support-open="donate"><i class="bi bi-cup-hot"></i> Mời tác giả ly trà</button>' +
         '<button type="button" class="dropdown-item" data-act="signout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>';
       $('#sync-note').innerHTML = '<i class="bi bi-cloud-check"></i> Tiến độ được đồng bộ với tài khoản <b>' + esc(info.email || info.name) + '</b>.';
       $('#reset-scope').textContent = ' trên mọi thiết bị đã đăng nhập';
