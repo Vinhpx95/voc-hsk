@@ -1017,7 +1017,7 @@ html.show-welcome .app-toasts { display: none !important; }
   .nav-switch-btn i { display: none; }
 }
 
-/* ---------- 11c. Tài liệu & Ủng hộ (#support-modal), chúc mừng (#cele-modal), chân trang ---------- */
+/* ---------- 11c. Tài liệu & Ủng hộ (#support-modal), chúc mừng (#cele-modal) ---------- */
 /* Thông tin chuyển khoản còn là mẫu → ẩn mọi lối vào trên trang thật (js/support.js gắn .support-on) */
 html:not(.support-on) .support-entry { display: none !important; }
 
@@ -1032,25 +1032,6 @@ html:not(.support-on) .support-entry { display: none !important; }
 .nav-support:hover { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
 .nav-support:active { transform: scale(.96); }
 .nav-support i { font-size: 1rem; }
-
-.app-footer {
-  display: flex; align-items: center; justify-content: space-between; gap: .5rem 1rem; flex-wrap: wrap;
-  max-width: 1120px; padding-top: 1rem; padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border);
-  color: var(--text-muted); font-size: .85rem;
-}
-html.show-welcome .app-footer { display: none !important; }
-.app-footer-note { display: inline-flex; align-items: center; gap: .5rem; }
-.brand-mark-sm {
-  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px;
-  background: var(--primary); color: var(--on-primary); font-size: .8rem;
-}
-.footer-support {
-  display: inline-flex; align-items: center; gap: .4rem; min-height: 36px; padding: 0 .65rem;
-  border: 0; border-radius: 10px; background: transparent; color: var(--primary-ink); font-weight: 600;
-  transition: background-color .2s ease;
-}
-.footer-support:hover { background: var(--primary-soft); }
 
 /* Chúc mừng khi xong một mục tiêu (#cele-modal) */
 .cele-modal .modal-dialog { max-width: 400px; }
@@ -1274,11 +1255,6 @@ html.show-welcome .app-footer { display: none !important; }
 .sp-deliver { margin-top: .9rem; padding-top: .85rem; border-top: 1px dashed var(--border); }
 .sp-deliver-note { margin-bottom: .6rem; font-size: .82rem; line-height: 1.45; color: var(--text-muted); }
 
-@media (max-width: 991.98px) {
-  .app-footer { max-width: 760px; padding-left: 1rem; padding-right: 1rem; }
-  /* Thanh nút cố định ở đáy tab Học → chừa chỗ để chân trang không bị che */
-  body:has(#tab-study.active) .app-footer { padding-bottom: calc(var(--bar-card-h) + 1rem + env(safe-area-inset-bottom)); }
-}
 @media (max-width: 767.98px) {
   .nav-support span { display: none; }
   .nav-support { width: 36px; padding: 0; margin-right: .15rem; }
@@ -1286,8 +1262,7 @@ html.show-welcome .app-footer { display: none !important; }
   .sp-pay { position: static; }
 }
 @media (max-width: 575.98px) {
-  .nav-support { display: none; }     /* điện thoại: mở từ menu tài khoản hoặc chân trang */
-  .app-footer { justify-content: center; text-align: center; }
+  .nav-support { display: none; }     /* điện thoại: mở từ menu tài khoản */
   .support-modal .modal-header { padding: 1rem 1rem .8rem; }
   .support-modal .modal-body { padding: .875rem 1rem 1rem; }
   .sp-tabs .seg-btn { padding: 0 .5rem; font-size: .88rem; }
