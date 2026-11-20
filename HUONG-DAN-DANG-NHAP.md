@@ -73,6 +73,32 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
   - `users/{uid}`: tên, email, mục tiêu ngày, chuỗi ngày học, lộ trình.
   - `users/{uid}/progress/{cấp HSK}`: tiến độ từng từ.
 
+## Trang báo cáo quản trị (admin)
+
+Địa chỉ: <https://vinhpx95.github.io/voc-hsk/admin-report/>. Trang không có liên kết ở đâu, không được Google lập chỉ mục,
+và chỉ mở cho email quản trị. Người chưa đăng nhập hoặc tài khoản khác bị chuyển về trang chủ.
+
+- **Thẻ tổng quan:** tổng tài khoản, tổng lượt sử dụng, người dùng mới 7 ngày qua, người hoạt động hôm nay.
+- **Bảng từng tài khoản** (mới hoạt động lên đầu, có ô tìm kiếm): email, tên, ngày tham gia, lần hoạt động gần nhất,
+  số lần sử dụng, số từ đã học (đã thuộc).
+- **Export to CSV:** tải bảng về máy, mã UTF-8 có BOM nên Excel hiển thị đúng tiếng Việt.
+
+Cách tính:
+- *Ngày tham gia* = ngày tạo tài khoản trên Firebase (lần đăng nhập Google đầu tiên).
+- *Một lượt sử dụng* = đăng nhập, mở trang hoặc quay lại tab sau **≥ 30 phút** không hoạt động trên thiết bị đó.
+  Tải lại trang (F5) hay học liên tục không cộng thêm. Mỗi thiết bị tính riêng.
+- *Từ đã học* = từ đang học + đã thuộc; *đã thuộc* = trạng thái "Đã thuộc".
+- Số liệu ghi vào `users/{uid}` (`firstLoginAt`, `lastActiveAt`, `sessionCount`, `learnedWordsCount`,
+  `masteredWordsCount`) cùng lần đồng bộ tiến độ, nên hầu như không tốn thêm lượt ghi. Tài khoản đăng nhập trước khi có
+  tính năng này sẽ có số liệu từ lần mở trang tiếp theo.
+
+Cấu hình quản trị viên:
+1. `js/firebase-config.js` → `ADMIN_EMAIL_SHA256`: mã băm SHA-256 của email admin (viết thường). Dùng mã băm để email
+   không bị công khai trên GitHub. Lệnh tạo mã có ghi trong file.
+2. **Firestore Rules** (bắt buộc, đây mới là lớp bảo vệ thật): dán [`firestore.rules`](firestore.rules) vào Console,
+   thay `EMAIL_QUAN_TRI@gmail.com` bằng email admin → **Publish**. Admin chỉ được *đọc* hồ sơ tổng của mọi người,
+   không đọc được tiến độ chi tiết và không ghi được dữ liệu của ai.
+
 ## Lỗi thường gặp
 
 | Thông báo trên trang | Cách xử lý |
@@ -81,6 +107,7 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 | Đăng nhập bằng Google chưa được bật | Bật Google ở bước 2.2 |
 | Trình duyệt đã chặn cửa sổ đăng nhập | Cho phép cửa sổ bật lên (popup) cho trang |
 | Bạn đang mở trang trong một ứng dụng | Google chặn đăng nhập trong Zalo/Facebook. Mở bằng Chrome hoặc Safari |
+| Trang báo cáo: "Firestore chưa cho phép tài khoản quản trị đọc dữ liệu" | Dán Rules mới (có email admin) rồi Publish |
 
 ## Gói miễn phí (Spark) đủ cho bao nhiêu người
 

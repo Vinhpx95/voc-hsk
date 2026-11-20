@@ -1,8 +1,25 @@
 rules_version = '2';
-// Voc-Lang: mỗi người chỉ đọc/ghi được dữ liệu học của chính mình (users/{uid} và mọi tài liệu con).
-// Dán toàn bộ nội dung này vào Firebase Console → Firestore Database → Rules → Publish.
+// Voc-Lang — dán toàn bộ nội dung này vào Firebase Console → Firestore Database → Rules → Publish.
+//
+// Thay EMAIL_QUAN_TRI@gmail.com bằng email Google của quản trị viên (chỉ sửa trong Console,
+// không cần commit email thật lên GitHub).
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Quản trị viên: đăng nhập Google bằng đúng email này và email đã được Google xác minh
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'EMAIL_QUAN_TRI@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    // Trang báo cáo (admin-report/): admin chỉ ĐỌC hồ sơ + số liệu tổng (users/{uid}),
+    // không đọc được tiến độ chi tiết từng từ và không ghi được dữ liệu của người khác.
+    match /users/{uid} {
+      allow read: if isAdmin();
+    }
+
+    // Mỗi người chỉ đọc/ghi được dữ liệu của chính mình (users/{uid} và mọi tài liệu con)
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }

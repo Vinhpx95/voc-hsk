@@ -12,3 +12,11 @@ window.FIREBASE_CONFIG = {
   projectId: 'voc-lang-hsk',
   appId: '1:1078307973316:web:d8a142ac99d69c3a56c191'
 };
+
+/*
+ * ADMIN_EMAIL — trang báo cáo quản trị (admin-report/) chỉ mở cho email này.
+ * Lưu dạng mã băm SHA-256 (chữ thường) thay vì email thật để không công khai email trên GitHub.
+ * Đổi admin: chạy  node -e "console.log(require('crypto').createHash('sha256').update('email@gmail.com').digest('hex'))"
+ * rồi dán kết quả vào đây, và sửa email trong Firestore Rules (firestore.rules). Rules mới là lớp bảo vệ dữ liệu thật sự.
+ */
+window.ADMIN_EMAIL_SHA256 = '432ae40de438891d9a08be9fe7660d8d628210b13f5cd556401f67a3339223fd';

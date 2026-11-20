@@ -6,12 +6,17 @@
  *   - khi dữ liệu trên máy đổi: gom 10 giây (hoặc khi rời trang/chuyển app) rồi chỉ gửi những từ đã thay đổi.
  *
  * Firestore:
- *   users/{uid}                 { name, email, daily, settings, resetAt, updatedAt }
+ *   users/{uid}                 { name, email, daily, settings, resetAt, updatedAt,
+ *                                 firstLoginAt, lastActiveAt, sessionCount, learnedWordsCount, masteredWordsCount }
+ *     — 5 trường cuối dùng cho trang báo cáo quản trị (admin-report/), chỉ admin đọc được (xem firestore.rules)
  *   users/{uid}/progress/{cấp}  { words: { <id từ>: "<bản ghi tiến độ dạng JSON>" } }
  *     — chia theo cấp HSK để mỗi tài liệu < 1 MB; mỗi từ là một chuỗi để không vượt giới hạn 20.000 trường/tài liệu
  *
  * Trạng thái trên máy (localStorage 'hoctq-sync', không có dấu chấm để không kích hoạt tải lại giữa các tab):
- *   { mode: 'user' | '', uid, name, email, photo, resetAt, syncedAt }
+ *   { mode: 'user' | '', uid, name, email, photo, resetAt, syncedAt, lastActiveAt }
+ *
+ * Phiên sử dụng (sessionCount): tính một phiên mới khi đăng nhập / mở trang / quay lại tab sau ≥ 30 phút không hoạt động
+ * trên thiết bị này. Tải lại trang (F5) hay học liên tục không làm tăng số phiên.
  *
  * Phát sự kiện window:
  *   'authchange' — đổi trạng thái đăng nhập / đồng bộ (detail = Cloud.info())
@@ -22,6 +27,7 @@
   var KEY_META = 'hoctq-sync';
   var PUSH_DELAY = 10 * 1000;   // gom thay đổi 10 giây/lần để tiết kiệm lượt ghi (rời trang thì gửi ngay)
   var PULL_MIN_GAP = 20 * 1000;
+  var SESSION_GAP = 30 * 60 * 1000;   // nghỉ ≥ 30 phút rồi quay lại = phiên mới
 
   var cfg = window.FIREBASE_CONFIG || {};
   var configured = !!(cfg.apiKey && cfg.projectId);
@@ -164,6 +170,20 @@
     return sdkPromise;
   }
 
+  /* ---------- Ghi nhận phiên sử dụng ---------- */
+  var newSession = false;   // phiên mới chưa ghi lên Firestore
+  function touchActivity() {
+    var now = Date.now();
+    if (!meta.lastActiveAt || now - meta.lastActiveAt >= SESSION_GAP) newSession = true;
+    meta.lastActiveAt = now;
+    saveMeta();
+  }
+  /** Ngày tạo tài khoản Firebase = lần đăng nhập đầu tiên */
+  function firstLoginValue() {
+    var t = user && user.metadata && Date.parse(user.metadata.creationTime);
+    return t ? firebase.firestore.Timestamp.fromDate(new Date(t)) : firebase.firestore.FieldValue.serverTimestamp();
+  }
+
   function onAuth(u) {
     authResolved = true;
     user = u;
@@ -176,6 +196,7 @@
       meta.email = u.email || '';
       meta.photo = u.photoURL || '';
       saveMeta();
+      touchActivity();
       setStatus('syncing');
       pull(true);
     } else {
@@ -220,7 +241,12 @@
       return Promise.all([userRef().get(), userRef().collection('progress').get()]).then(function (res) {
         var doc = res[0].exists ? res[0].data() : {};
         var cloud = { progress: {}, daily: doc.daily || null, settings: doc.settings || null };
-        known = { words: {}, daily: stable(cloud.daily), settings: stable(cloud.settings), profile: (doc.name || '') + '|' + (doc.email || '') };
+        known = {
+          words: {}, daily: stable(cloud.daily), settings: stable(cloud.settings),
+          profile: (doc.name || '') + '|' + (doc.email || ''),
+          firstLogin: !!doc.firstLoginAt,
+          stats: stable([doc.learnedWordsCount, doc.masteredWordsCount])
+        };
         res[1].forEach(function (d) {
           var words = (d.data() || {}).words || {};
           Object.keys(words).forEach(function (id) {
@@ -281,8 +307,15 @@
     if (sStr !== known.settings) head.settings = data.settings || firebase.firestore.FieldValue.delete();
     var prof = meta.name + '|' + meta.email;
     if (profile && known.profile !== prof) { head.name = meta.name; head.email = meta.email; }
+    // Số liệu cho báo cáo quản trị
+    var sum = Store.summary(), stats = [sum.learning + sum.mastered, sum.mastered], statsStr = stable(stats);
+    if (statsStr !== known.stats) { head.learnedWordsCount = stats[0]; head.masteredWordsCount = stats[1]; }
+    if (!known.firstLogin) head.firstLoginAt = firstLoginValue();
+    var session = newSession;
+    if (session) head.sessionCount = firebase.firestore.FieldValue.increment(1);
     if (ops || Object.keys(head).length) {
       head.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      head.lastActiveAt = head.updatedAt;
       batch.set(userRef(), head, { merge: true });
       ops++;
     }
@@ -294,6 +327,9 @@
       if ('daily' in head) known.daily = dStr;
       if ('settings' in head) known.settings = sStr;
       if ('email' in head) known.profile = prof;
+      if ('learnedWordsCount' in head) known.stats = statsStr;
+      if ('firstLoginAt' in head) known.firstLogin = true;
+      if (session) newSession = false;
       markSynced();
     });
   }
@@ -305,6 +341,7 @@
   var pendingTimer = null;
   function schedulePush() {
     if (!user) return;
+    meta.lastActiveAt = Date.now(); saveMeta();   // đang học → phiên vẫn tiếp diễn
     clearTimeout(pendingTimer);
     pendingTimer = setTimeout(flush, PUSH_DELAY);
     if (status !== 'syncing') setStatus('pending');
@@ -333,7 +370,7 @@
         }, { merge: true });
         return batch.commit();
       }).then(function () {
-        known = { words: {}, daily: 'null', settings: 'null' };
+        known = { words: {}, daily: 'null', settings: 'null', profile: known.profile, firstLogin: known.firstLogin };
         return pushNow(false);
       });
     });
@@ -345,7 +382,7 @@
   // Rời trang / chuyển app: gửi ngay. Quay lại: tải bản mới từ thiết bị khác.
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') { if (pendingTimer) flush(); }
-    else pull(false);
+    else if (user) { touchActivity(); if (newSession) lastPull = 0; pull(false); }
   });
   window.addEventListener('pagehide', function () { if (pendingTimer) flush(); });
   window.addEventListener('online', function () { if (user) { lastPull = 0; pull(false); } });
