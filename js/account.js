@@ -25,16 +25,38 @@
   if (total) $('#welcome-count').textContent = total.toLocaleString('vi-VN');
 
   /* Chưa cấu hình Firebase hoặc mở bằng file:// → không có đăng nhập, học như trước (không hiện màn hình chào).
-   * Riêng index.html?welcome vẫn hiện màn hình chào để xem thử; nút Google khi đó chỉ báo lý do. */
+   * Riêng index.html?welcome là BẢN XEM THỬ: "Tiếp tục với Google" đăng nhập bằng tài khoản mẫu (không gọi Google,
+   * không đồng bộ) để xem avatar, menu tài khoản và Đăng xuất → quay lại màn hình chào. */
   if (!Cloud.canSignIn()) {
-    $('.account').classList.add('d-none');
-    if (!/[?&]welcome(?:[=&]|$)/.test(location.search)) { root.classList.remove('show-welcome'); return; }
+    if (!/[?&]welcome(?:[=&]|$)/.test(location.search)) {
+      root.classList.remove('show-welcome');
+      $('.account').classList.add('d-none');
+      return;
+    }
+    var GUEST = { mode: 'guest', status: 'idle' };
+    var DEMO = { mode: 'user', signedIn: true, status: 'synced', name: 'Người học Voc-Lang', email: 'ban@gmail.com', photo: '', syncedAt: Date.now() };
+    render(GUEST);
     $('#btn-google').addEventListener('click', function () {
-      alertBox(Cloud.isFile
-        ? 'Bản xem thử: đăng nhập chỉ hoạt động khi mở trang qua địa chỉ web (GitHub Pages hoặc localhost), không chạy khi mở file trực tiếp.'
-        : 'Bản xem thử: đăng nhập Google chưa được cấu hình (xem HUONG-DAN-DANG-NHAP.md).');
+      DEMO.syncedAt = Date.now();
+      render(DEMO);
+      showWelcome(false);
+      toast('<b>Bản xem thử:</b> đã đăng nhập bằng tài khoản mẫu. Khi bật Firebase, đây sẽ là tên và ảnh Google của người học.');
     });
-    $('#btn-guest').addEventListener('click', function () { root.classList.remove('show-welcome'); });
+    $('#btn-guest').addEventListener('click', function () { render(GUEST); showWelcome(false); });
+    document.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-act]');
+      if (!el) return;
+      e.preventDefault();
+      var act = el.dataset.act;
+      if (act === 'signin' || act === 'signout') {
+        var m = bootstrap.Modal.getInstance($('#settings-modal')); if (m) m.hide();
+        if (act === 'signout') render(GUEST);
+        showWelcome(true);
+        alertBox('');
+      } else if (act === 'sync') {
+        DEMO.syncedAt = Date.now(); render(DEMO);
+      }
+    });
     return;
   }
 
@@ -144,8 +166,9 @@
     }
   }
 
-  function render() {
-    var info = Cloud.info(), box = $('.account');
+  function render(info) {
+    info = info || Cloud.info();
+    var box = $('.account');
     box.dataset.mode = info.mode;
     box.dataset.status = info.status;
 
@@ -206,7 +229,7 @@
 
   window.addEventListener('authchange', function (e) {
     var info = e.detail || Cloud.info();
-    render();
+    render(info);
     if (info.signedIn) showWelcome(false);
     else if (info.authResolved && !info.mode) showWelcome(true);   // phiên đăng nhập hết hạn
   });
