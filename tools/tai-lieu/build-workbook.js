@@ -21,6 +21,7 @@ const OUT = path.resolve(opt('out') || path.join(ROOT, '_tam', 'vo-luyen-viet-hs
 const all = require(path.join(ROOT, 'du-lieu', 'chu-han.json'));
 let chars = all.filter(c => c.level === LEVEL).sort((a, b) => a.order - b.order);
 const totalInLevel = chars.length;
+if (opt('from')) chars = chars.slice(Math.max(0, chars.findIndex(c => c.char === opt('from'))));   // --from 字: bắt đầu từ chữ này (xem thử)
 if (LIMIT) chars = chars.slice(0, LIMIT);
 const need = new Set(chars.map(c => c.char).concat(['学', '十', '人', '三', '川', '月', '国', '小', '水']));
 const strokes = new Map();
