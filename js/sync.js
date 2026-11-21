@@ -11,6 +11,8 @@
  *     — 5 trường cuối dùng cho trang báo cáo quản trị (admin-report/), chỉ admin đọc được (xem firestore.rules)
  *   users/{uid}/progress/{cấp}  { words: { <id từ>: "<bản ghi tiến độ dạng JSON>" } }
  *     — chia theo cấp HSK để mỗi tài liệu < 1 MB; mỗi từ là một chuỗi để không vượt giới hạn 20.000 trường/tài liệu
+ *     — từ đổi cấp (dữ liệu từ vựng chuyển từ sang cấp khác): bản ghi được ghi vào tài liệu cấp mới và xóa khỏi tài liệu cấp cũ;
+ *       nếu một từ vẫn nằm ở nhiều tài liệu (dữ liệu cũ), khi tải về các bản được GỘP bằng mergeRecord rồi dọn ở lần gửi sau
  *
  * Trạng thái trên máy (localStorage 'hoctq-sync', không có dấu chấm để không kích hoạt tải lại giữa các tab):
  *   { mode: 'user' | '', uid, name, email, photo, resetAt, syncedAt, lastActiveAt }
@@ -48,7 +50,8 @@
   var status = 'idle';          // idle | loading | syncing | pending | synced | offline | error
   var authResolved = false;     // Firebase đã khôi phục xong phiên đăng nhập
   var lastPull = 0;
-  var known = { words: {}, daily: null, settings: null };   // bản trên đám mây mà máy này đã biết (chuỗi JSON)
+  // Bản trên đám mây mà máy này đã biết: words = chuỗi JSON từng từ, shards = id từ → các tài liệu progress/{cấp} đang chứa từ đó
+  var known = { words: {}, shards: {}, daily: null, settings: null };
 
   function fire(name, detail) {
     try { window.dispatchEvent(new CustomEvent(name, { detail: detail })); } catch (e) { /* trình duyệt cũ */ }
@@ -189,7 +192,7 @@
     user = u;
     if (u) {
       // Dữ liệu trên máy thuộc tài khoản khác → xóa trước khi gộp. Dữ liệu cũ chưa gắn tài khoản (chưa có uid) được giữ để gộp vào.
-      if (meta.uid && meta.uid !== u.uid) { Store.clearLocal(); known = { words: {}, daily: null, settings: null }; meta.resetAt = 0; }
+      if (meta.uid && meta.uid !== u.uid) { Store.clearLocal(); known = { words: {}, shards: {}, daily: null, settings: null }; meta.resetAt = 0; }
       meta.mode = 'user';
       meta.uid = u.uid;
       meta.name = u.displayName || '';
@@ -242,7 +245,7 @@
         var doc = res[0].exists ? res[0].data() : {};
         var cloud = { progress: {}, daily: doc.daily || null, settings: doc.settings || null };
         known = {
-          words: {}, daily: stable(cloud.daily), settings: stable(cloud.settings),
+          words: {}, shards: {}, daily: stable(cloud.daily), settings: stable(cloud.settings),
           profile: (doc.name || '') + '|' + (doc.email || ''),
           firstLogin: !!doc.firstLoginAt,
           stats: stable([doc.learnedWordsCount, doc.masteredWordsCount])
@@ -250,7 +253,18 @@
         res[1].forEach(function (d) {
           var words = (d.data() || {}).words || {};
           Object.keys(words).forEach(function (id) {
-            try { cloud.progress[id] = JSON.parse(words[id]); known.words[id] = words[id]; } catch (e) { /* bản ghi hỏng: bỏ qua */ }
+            var rec;
+            try { rec = JSON.parse(words[id]); } catch (e) { return; /* bản ghi hỏng: bỏ qua */ }
+            (known.shards[id] = known.shards[id] || []).push(d.id);
+            if (cloud.progress[id]) {
+              // Cùng một từ ở hai tài liệu cấp (từ đã đổi cấp): gộp, không để bản đọc sau đè bản mới hơn.
+              // known.words để trống → lần gửi tới ghi lại vào đúng cấp và xóa các bản thừa.
+              cloud.progress[id] = mergeRecord(cloud.progress[id], rec);
+              known.words[id] = '';
+            } else {
+              cloud.progress[id] = rec;
+              known.words[id] = words[id];
+            }
           });
         });
 
@@ -295,7 +309,11 @@
       if (known.words[id] === str) return;
       var sid = shardId(rec.set);
       (shards[sid] = shards[sid] || {})[id] = str;
-      sent[id] = str;
+      // Từ đã đổi cấp: xóa bản ở tài liệu cấp cũ để lần tải sau không đọc phải bản cũ
+      (known.shards[id] || []).forEach(function (old) {
+        if (old !== sid) (shards[old] = shards[old] || {})[id] = firebase.firestore.FieldValue.delete();
+      });
+      sent[id] = { str: str, shard: sid };
     });
     Object.keys(shards).forEach(function (sid) {
       batch.set(userRef().collection('progress').doc(sid), { words: shards[sid] }, { merge: true });
@@ -323,7 +341,7 @@
 
     setStatus('syncing');
     return batch.commit().then(function () {
-      Object.keys(sent).forEach(function (id) { known.words[id] = sent[id]; });
+      Object.keys(sent).forEach(function (id) { known.words[id] = sent[id].str; known.shards[id] = [sent[id].shard]; });
       if ('daily' in head) known.daily = dStr;
       if ('settings' in head) known.settings = sStr;
       if ('email' in head) known.profile = prof;
@@ -370,7 +388,7 @@
         }, { merge: true });
         return batch.commit();
       }).then(function () {
-        known = { words: {}, daily: 'null', settings: 'null', profile: known.profile, firstLogin: known.firstLogin };
+        known = { words: {}, shards: {}, daily: 'null', settings: 'null', profile: known.profile, firstLogin: known.firstLogin };
         return pushNow(false);
       });
     });
