@@ -11,10 +11,10 @@ window.SUPPORT_CONFIG = {
 
   PAYMENT_CONFIG: {
     // Mã ngân hàng theo VietQR (cột "code" hoặc "bin" tại https://api.vietqr.io/v2/banks), ví dụ: MB, VCB, TCB, ACB, 970422…
-    bankId: 'MB',
-    bankName: 'MB Bank',            // tên hiển thị cho người dùng
-    accountNo: '0123456789',        // số tài khoản
-    accountName: 'NGUYEN VAN A',    // tên chủ tài khoản: VIẾT HOA, KHÔNG DẤU
+    bankId: 'TpBank',
+    bankName: 'Ngân hàng TMCP Tiên Phong (Tp bank)',            // tên hiển thị cho người dùng
+    accountNo: '01650977801',        // số tài khoản
+    accountName: 'PHAM XUAN VINH',    // tên chủ tài khoản: VIẾT HOA, KHÔNG DẤU
     contactLink: 'https://zalo.me/...'  // Zalo / Telegram để gửi file nhanh
   },
 
