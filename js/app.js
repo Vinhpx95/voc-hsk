@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /** Chấm vàng trên nút Bộ lọc (điện thoại) khi đang lọc theo trạng thái hoặc chủ đề */
   function renderFilterDot() {
-    var active = $('#filter-mode').value !== 'all' || !!$('#filter-tag').value;
+    var active = $('#filter-mode').value !== 'new' || !!$('#filter-tag').value;   // mặc định: từ mới
     $('#filter-dot').classList.toggle('d-none', !active);
   }
 
@@ -622,6 +622,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function renderCard() {
     var w = currentWord();
     $('#empty-deck').classList.toggle('d-none', !!w);
+    if (!w) $('#empty-deck').innerHTML = $('#filter-mode').value === 'new' && !$('#filter-tag').value
+      ? 'Bạn đã học hết từ mới của cấp này. Chọn trạng thái <b>Ôn tập từ cần nhớ</b> để ôn lại, hoặc chọn cấp HSK khác.'
+      : 'Không có từ nào phù hợp bộ lọc. Hãy đổi trạng thái, chủ đề hoặc cấp HSK.';
     $('#study-area').classList.toggle('d-none', !w);
     if (!w) { destroyWriter(); return; }
 
@@ -1268,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', function () {
   on('#btn-confirm-reset', 'click', function () {
     Store.resetAll();
     bootstrap.Modal.getOrCreateInstance($('#reset-modal')).hide();
-    $('#filter-mode').value = 'all';
+    $('#filter-mode').value = 'new';
     // Bắt đầu lại từ thẻ đầu tiên (không giữ vị trí thẻ đang xem như refreshAll)
     listPage = 1;
     renderHskFilter();
