@@ -72,7 +72,10 @@
         <button class="nav-support support-entry" type="button" data-support-open="resources" title="Tài liệu học tập: PDF luyện viết, audio">
           <i class="bi bi-journal-bookmark"></i><span>Tài liệu học tập</span>
         </button>
-        <button class="icon-btn" id="btn-theme" type="button" title="Chuyển chế độ Sáng/Tối" aria-label="Chuyển chế độ Sáng/Tối">
+        <button class="icon-btn d-sm-none" id="btn-dash" type="button" title="Tiến độ" aria-label="Tiến độ" aria-expanded="false" aria-controls="progress-dash">
+          <i class="bi bi-bar-chart-line"></i><span class="nav-due-badge d-none" id="nav-due" aria-hidden="true"></span>
+        </button>
+        <button class="icon-btn d-none d-sm-inline-flex" id="btn-theme" type="button" title="Chuyển chế độ Sáng/Tối" aria-label="Chuyển chế độ Sáng/Tối">
           <i class="bi bi-moon-stars theme-icon-light"></i><i class="bi bi-sun theme-icon-dark"></i>
         </button>
         <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#settings-modal" title="Cài đặt" aria-label="Cài đặt">
@@ -92,7 +95,8 @@
   <main class="container app-main tab-content">
     <!-- ================= HỌC ================= -->
     <section class="tab-pane fade show active" id="tab-study" role="tabpanel">
-      <!-- Tổng quan tiến độ -->
+      <!-- Tổng quan tiến độ (điện thoại: popup mở từ nút Tiến độ trên thanh trên cùng) -->
+      <div class="dash-backdrop" id="dash-backdrop" aria-hidden="true"></div>
       <div class="progress-dash" id="progress-dash">
         <div class="dash-item" title="Chuỗi ngày học liên tiếp">
           <i class="bi bi-fire dash-fire" id="dash-fire"></i>
@@ -342,6 +346,13 @@
           </div>
           <div class="form-text mb-3 tone-legend">
             <span class="t1">Thanh 1 ā</span> · <span class="t2">Thanh 2 á</span> · <span class="t3">Thanh 3 ǎ</span> · <span class="t4">Thanh 4 à</span> · <span class="t5">Thanh nhẹ a</span>
+          </div>
+          <div class="d-sm-none">
+            <div class="form-check form-switch mb-1">
+              <input class="form-check-input" type="checkbox" role="switch" id="set-dark">
+              <label class="form-check-label fw-semibold" for="set-dark">Giao diện tối</label>
+            </div>
+            <div class="form-text mb-3">Áp dụng ngay, không cần bấm Lưu.</div>
           </div>
           <div class="small text-muted-2 mb-3" id="settings-summary"></div>
           <hr>

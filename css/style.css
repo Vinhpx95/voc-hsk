@@ -1011,6 +1011,36 @@ html.show-welcome .app-toasts { display: none !important; }
   .ctl-btn span { display: none; }
 }
 
+/* Điện thoại: tiến độ thành popup dưới thanh trên cùng (mở bằng nút #btn-dash) để thẻ học vừa 1 màn hình */
+.nav-due-badge {
+  position: absolute; top: 3px; right: 1px;
+  min-width: 1.15rem; height: 1.15rem; padding: 0 .25rem;
+  border-radius: 999px; background: var(--amber); color: #fff;
+  font-size: .66rem; font-weight: 700; line-height: 1.15rem; text-align: center;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+#btn-dash[aria-expanded="true"] { background: var(--primary-soft); color: var(--primary); }
+.dash-backdrop { display: none; }
+@media (max-width: 575.98px) {
+  .progress-dash {
+    position: fixed; z-index: 1035;
+    top: calc(var(--nav-h) + env(safe-area-inset-top) + .5rem);
+    left: max(.75rem, env(safe-area-inset-left)); right: max(.75rem, env(safe-area-inset-right));
+    box-shadow: var(--shadow);
+    opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: opacity .18s ease, transform .18s var(--ease), visibility 0s linear .18s;
+  }
+  .progress-dash.is-open {
+    opacity: 1; visibility: visible; transform: none;
+    transition: opacity .18s ease, transform .18s var(--ease);
+  }
+  .dash-backdrop.is-open {
+    display: block; position: fixed; inset: 0; z-index: 1034;
+    background: rgba(15, 23, 42, .28);
+  }
+  .dash-review-text { display: inline; }
+}
+
 /* Điện thoại hẹp: thanh trên có thêm nút tài khoản → bỏ biểu tượng ở nút Học / Từ vựng */
 @media (max-width: 399.98px) {
   .nav-switch-btn i { display: none; }

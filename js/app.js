@@ -574,6 +574,9 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#dash-mastered').textContent = s.mastered;
     $('#dash-due').textContent = s.due;
     $('#btn-review-due').disabled = !s.due;
+    $('#nav-due').textContent = s.due > 99 ? '99+' : s.due;
+    $('#nav-due').classList.toggle('d-none', !s.due);
+    $('#btn-dash').setAttribute('aria-label', 'Tiến độ' + (s.due ? ' (' + s.due + ' từ cần ôn)' : ''));
 
     // Lộ trình: báo khi vừa mở cấp mới, và nhắc còn bao nhiêu từ để mở cấp tiếp theo
     var levels = availableLevels(), open = unlockedCount(s);
@@ -1129,11 +1132,18 @@ document.addEventListener('DOMContentLoaded', function () {
     document.documentElement.setAttribute('data-bs-theme', theme);
     $('#meta-theme-color').setAttribute('content', theme === 'dark' ? '#0F172A' : '#FAF9F5');
     $('#btn-theme').setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    $('#set-dark').checked = theme === 'dark';
     if (state.chars.length) loadWriterChar();      // vẽ lại ô viết theo màu mới
   }
   on('#btn-theme', 'click', function () {
     ui.themeSaved = true;
     applyTheme(ui.theme === 'dark' ? 'light' : 'dark');
+    saveUi();
+  });
+  // Điện thoại: công tắc trong Cài đặt thay cho nút trên thanh trên cùng
+  on('#set-dark', 'change', function () {
+    ui.themeSaved = true;
+    applyTheme(this.checked ? 'dark' : 'light');
     saveUi();
   });
   if (window.matchMedia) {
@@ -1181,8 +1191,22 @@ document.addEventListener('DOMContentLoaded', function () {
     b.addEventListener('click', function () { rate(b.dataset.r); });
   });
 
+  /* ---------- Điện thoại: tiến độ trong popup, mở/đóng bằng nút Tiến độ ---------- */
+  function setDashOpen(open) {
+    $('#progress-dash').classList.toggle('is-open', open);
+    $('#dash-backdrop').classList.toggle('is-open', open);
+    $('#btn-dash').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  on('#btn-dash', 'click', function () { setDashOpen(!$('#progress-dash').classList.contains('is-open')); });
+  on('#dash-backdrop', 'click', function () { setDashOpen(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('#progress-dash').classList.contains('is-open')) setDashOpen(false);
+  });
+  document.addEventListener('shown.bs.tab', function () { setDashOpen(false); });
+
   // Ôn tập từ cần nhớ: đang học hoặc tới hạn ôn
   on('#btn-review-due', 'click', function () {
+    setDashOpen(false);
     $('#filter-mode').value = 'due';
     buildDeck();
   });
@@ -1207,6 +1231,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var d = Store.getDaily(), s = Store.summary(), st = Store.getSettings();
     $('#goal-input').value = d.dailyGoal;
     $('#set-tone').checked = ui.tone;
+    $('#set-dark').checked = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     $('#start-level').innerHTML = availableLevels().map(function (l, i) {
       return '<option value="' + (i + 1) + '">' + (i ? 'Bắt đầu từ ' : 'Từ đầu: ') + esc(l.label) + '</option>';
     }).join('');
