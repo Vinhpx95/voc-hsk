@@ -32,30 +32,30 @@ window.SUPPORT_CONFIG = {
       price: 29000,
       badge: 'Bán chạy',
       codePrefix: 'HSK13',
-      description: 'File PDF in ra giấy gồm ô điền mễ, thứ tự nét bút, Pinyin & âm Hán-Việt cho toàn bộ từ vựng sơ cấp.',
+      description: '3 file PDF A4 (224 trang) luyện 1.068 chữ Hán HSK 1–3: ô điền mễ, thứ tự từng nét, pinyin, âm Hán-Việt và từ HSK có chữ đó.',
       deliveryLink: ''
     },
     {
       id: 'audio',
       icon: 'bi-headphones',
-      name: 'Bộ Audio Nghe Thụ Động Song Ngữ',
-      format: 'MP3',
+      name: 'Bộ Audio Nghe Thụ Động Song Ngữ HSK 1–6',
+      format: 'MP3 + PDF',
       price: 39000,
       badge: '',
       codePrefix: 'AUDIO',
-      description: 'Tổng hợp file MP3 đọc từ vựng, nghĩa tiếng Việt và câu ví dụ chia theo từng bài để nghe khi đi đường.',
+      description: '228 bài MP3 (~22 giờ) cho 5.671 từ HSK 1–6: mỗi từ đọc 2 lần, nghĩa tiếng Việt, câu ví dụ và nghĩa câu. Kèm PDF danh sách từ theo bài để nhìn theo khi nghe.',
       deliveryLink: ''
     },
     {
       id: 'combo',
       icon: 'bi-box2-heart',
       name: 'Full Combo Trọn Bộ HSK 1–6 & 214 Bộ Thủ',
-      format: 'PDF + MP3 + Ebook',
+      format: 'PDF + MP3',
       price: 59000,
       originalPrice: 99000,
       badge: 'Khuyên dùng',
       codePrefix: 'COMBO',
-      description: 'Trọn bộ PDF Luyện viết HSK 1–6 + Full Audio Nghe thụ động + Ebook Sổ tay 214 Bộ thủ chiết tự nhớ nhanh.',
+      description: 'Vở luyện viết HSK 1–6 (2.701 chữ, 560 trang) + toàn bộ audio (228 bài, ~22 giờ) + Sổ tay 214 bộ thủ (77 trang, chiết tự nhớ nhanh).',
       deliveryLink: '',
       default: true                 // gói được chọn sẵn
     }
