@@ -222,7 +222,7 @@
    *   reported  người mua bấm "Đã chuyển khoản" → Apps Script báo email cho chủ trang
    *   sent      chủ trang đã gửi link tải · unpaid: chưa thấy tiền · cancelled: đã hủy
    * Mỗi tài khoản một đơn cho mỗi gói. Mã chuyển khoản theo tài khoản + gói + lần mua (n, lần đầu không ghi).
-   * Link tải hết hạn sau 24 giờ: đơn "sent" quá 24 giờ hiện là "done" → hiện lại mã QR để mua lần nữa
+   * Link tải hết hạn sau 24 giờ: đơn "sent" quá 24 giờ là "done" → giao diện như chưa mua (không chip), mã QR mua lần nữa
    * (mã chuyển khoản mới, chỉ ghi đơn khi người mua bấm "Đã chuyển khoản").
    * ============================================================ */
   var MINUTE = 60 * 1000, DAY = 24 * 60 * MINUTE;
@@ -339,7 +339,6 @@
     pending: ['sp-chip-amber', 'bi-hourglass-split', 'Chờ thanh toán'],
     reported: ['sp-chip-jade', 'bi-send-check', 'Đã báo chuyển khoản'],
     sent: ['sp-chip-jade', 'bi-envelope-check', 'Đã gửi tài liệu'],
-    done: ['sp-chip-jade', 'bi-bag-check', 'Đã mua'],
     unpaid: ['sp-chip-rose', 'bi-exclamation-circle', 'Chưa thấy tiền']
   };
 
