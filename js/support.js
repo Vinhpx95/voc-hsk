@@ -221,14 +221,18 @@
    *   pending   chờ thanh toán (lưu ngay khi mã QR hiện ra)
    *   reported  người mua bấm "Đã chuyển khoản" → Apps Script báo email cho chủ trang
    *   sent      chủ trang đã gửi link tải · unpaid: chưa thấy tiền · cancelled: đã hủy
-   * Mỗi tài khoản một đơn cho mỗi gói, mã chuyển khoản cố định theo tài khoản + gói.
+   * Mỗi tài khoản một đơn cho mỗi gói. Mã chuyển khoản theo tài khoản + gói + lần mua (n, lần đầu không ghi).
+   * Link tải hết hạn sau 24 giờ: đơn "sent" quá 24 giờ hiện là "done" → hiện lại mã QR để mua lần nữa
+   * (mã chuyển khoản mới, chỉ ghi đơn khi người mua bấm "Đã chuyển khoản").
    * ============================================================ */
   var MINUTE = 60 * 1000, DAY = 24 * 60 * MINUTE;
   var REMIND_AFTER = 10 * MINUTE;      // đơn chờ quá 10 phút chưa báo chuyển khoản → nhắc
   var EXPIRE_AFTER = 7 * DAY;          // đơn chờ quá 7 ngày → coi như đã hủy
+  var LINK_TTL = DAY + MINUTE;         // link tải dùng được 24 giờ (+1 phút cho lệch giờ máy, Rules kiểm 24 giờ)
   var CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // bỏ 0/O, 1/I cho dễ đọc
   var Orders = (function () {
     var data = {}, uid = '';           // productId → dữ liệu đơn (null: chưa có)
+    var draft = {};                    // productId → { n, code, transfer } của lần mua tiếp theo (đơn "done")
     function cloud() { return window.Cloud; }
     function account() { var c = cloud(); return c && c.account ? c.account() : null; }
     function ref(pid) { return cloud().orderRef(pid); }
@@ -247,12 +251,23 @@
       });
     }
     function transferOf(p, code) { return 'Tai lieu ' + p.codePrefix + ' ' + code; }
-    /** Trạng thái để hiển thị: none | pending | reported | sent | unpaid | cancelled | expired */
+    /** Mã lần mua thứ n (lần 1 giữ nguyên mã cũ theo tài khoản + gói) */
+    function codeForRound(u, pid, n) { return codeFor(u, n > 1 ? pid + '#' + n : pid); }
+    /** Trạng thái để hiển thị: none | pending | reported | sent | done | unpaid | cancelled | expired */
     function state(pid) {
       var o = data[pid];
       if (!o) return 'none';
       if (o.status === 'pending' && Date.now() - ms(o.createdAt) > EXPIRE_AFTER) return 'expired';
+      if (o.status === 'sent' && o.sentAt && Date.now() - ms(o.sentAt) > LINK_TTL) return 'done';
       return o.status;
+    }
+    /** Đơn "done": tính sẵn mã chuyển khoản lần mua tiếp theo để hiện mã QR (chưa ghi gì) */
+    function prepare(p) {
+      var a = account(), n = ((data[p.id] && data[p.id].n) || 1) + 1;
+      return codeForRound(a.uid, p.id, n).then(function (code) {
+        draft[p.id] = { n: n, code: code, transfer: transferOf(p, code) };
+        return draft[p.id];
+      });
     }
     function fetchOne(pid) {
       return ref(pid).get().then(function (s) { data[pid] = s.exists ? s.data() : null; return data[pid]; });
@@ -267,9 +282,16 @@
     function ensure(p) {
       var a = account();
       if (!a) return Promise.reject(new Error('signed-out'));
-      return codeFor(a.uid, p.id).then(function (code) {
+      var o0 = data[p.id], st0 = state(p.id);
+      var n = st0 === 'done' ? (o0.n || 1) + 1 : (o0 && o0.n) || 1;
+      return codeForRound(a.uid, p.id, n).then(function (code) {
         var o = data[p.id], st = state(p.id);
         var body = { name: (a.name || '').slice(0, 100), productName: p.name, price: p.price, code: code, transfer: transferOf(p, code) };
+        if (st === 'done') {
+          // Mua lại sau khi link cũ hết hạn: mở lại đơn với mã chuyển khoản mới (lần mua n)
+          return ref(p.id).update(Object.assign({ status: 'pending', createdAt: T(), updatedAt: T(), n: n }, body))
+            .then(function () { delete draft[p.id]; return fetchOne(p.id); });
+        }
         if (st === 'none') {
           return ref(p.id).set(Object.assign({ uid: a.uid, email: a.email, productId: p.id, status: 'pending', createdAt: T(), updatedAt: T() }, body))
             .then(function () { return fetchOne(p.id); });
@@ -305,7 +327,8 @@
       });
       return t;
     }
-    return { load: load, ensure: ensure, report: report, cancel: cancel, state: state, get: function (pid) { return data[pid]; },
+    return { load: load, ensure: ensure, prepare: prepare, report: report, cancel: cancel, state: state,
+      get: function (pid) { return data[pid]; }, draft: function (pid) { return draft[pid]; },
       due: due, nextCheck: nextCheck, ms: ms, account: account };
   })();
 
@@ -316,6 +339,7 @@
     pending: ['sp-chip-amber', 'bi-hourglass-split', 'Chờ thanh toán'],
     reported: ['sp-chip-jade', 'bi-send-check', 'Đã báo chuyển khoản'],
     sent: ['sp-chip-jade', 'bi-envelope-check', 'Đã gửi tài liệu'],
+    done: ['sp-chip-jade', 'bi-bag-check', 'Đã mua'],
     unpaid: ['sp-chip-rose', 'bi-exclamation-circle', 'Chưa thấy tiền']
   };
 
@@ -388,8 +412,7 @@
         html = '<i class="bi bi-envelope-check sp-gate-icon is-ok"></i>' +
           '<p><b>Đã gửi tài liệu</b></p>' +
           '<p class="sp-gate-text">Link tải đã được gửi tới <b>' + esc(o.email) + '</b>' + (o.sentAt ? ' lúc ' + when(Orders.ms(o.sentAt)) : '') + '.</p>' +
-          spamTip +
-          '<p class="sp-gate-text">Link hết hạn hoặc chưa tải kịp? Trả lời email đó để nhận link mới.</p>';
+          spamTip;
       } else if (st === 'cancelled' || st === 'expired') {
         html = '<i class="bi bi-x-circle sp-gate-icon"></i>' +
           '<p><b>Đã hủy đơn</b></p>' +
@@ -408,7 +431,8 @@
       gate.innerHTML = html;
       if (gated) return;
 
-      pay.update(product.price, o.transfer, product.name);
+      var d = st === 'done' ? Orders.draft(product.id) : null;
+      pay.update(product.price, d ? d.transfer : o.transfer, product.name);
       var note, btns = '';
       if (st === 'reported') {
         note = 'Bạn đã báo chuyển khoản cho đơn này. Link tải sẽ được gửi tới <b>' + esc(o.email) + '</b> trong vòng 24 giờ sau khi xác nhận thanh toán.';
@@ -466,6 +490,7 @@
         }
         var st = Orders.state(product.id);
         if (st === 'sent' || st === 'reported' || st === 'unpaid') return null;
+        if (st === 'done') return Orders.prepare(product);   // link cũ hết hạn: hiện mã QR mua lại, chưa ghi đơn
         if ((st === 'cancelled' || st === 'expired') && !reopen) return null;
         return Orders.ensure(product);
       }).then(function () {
@@ -485,10 +510,14 @@
     function act(kind, pid) {
       var p = PRODUCTS.filter(function (x) { return x.id === (pid || product.id); })[0];
       if (!p || busy) return;
-      var o = Orders.get(p.id);
-      if (kind === 'report' && !window.confirm('Bạn đã chuyển ' + vnd(o.price) + ' với nội dung "' + o.transfer + '"?\n\nBấm OK để báo cho mình kiểm tra và gửi tài liệu.')) return;
+      var o = Orders.get(p.id), again = Orders.state(p.id) === 'done', d = again && Orders.draft(p.id);
+      if (again && !d) return;
+      if (kind === 'report' && !window.confirm('Bạn đã chuyển ' + vnd(again ? p.price : o.price) + ' với nội dung "' + (again ? d.transfer : o.transfer) + '"?\n\nBấm OK để báo cho mình kiểm tra và gửi tài liệu.')) return;
       busy = true; errText = ''; renderPay();
-      (kind === 'report' ? Orders.report(p.id) : Orders.cancel(p.id)).then(function () {
+      var job = kind !== 'report' ? Orders.cancel(p.id)
+        : again ? Orders.ensure(p).then(function () { return Orders.report(p.id); })   // mua lại: mở đơn mới rồi báo chuyển khoản
+        : Orders.report(p.id);
+      job.then(function () {
         busy = false; peek = false;
         if (kind === 'report' && p !== product) { product = p; }
         renderAll();

@@ -28,6 +28,7 @@ service cloud.firestore {
     // status: pending (chờ thanh toán) → reported (đã báo chuyển khoản) → sent (đã gửi tài liệu)
     //         unpaid (chưa thấy tiền, admin đặt) · cancelled (đã hủy: người mua bấm "Tôi chưa mua" hoặc admin hủy)
     // Đơn pending quá 7 ngày được web hiển thị là đã hủy (không cần ghi lại).
+    // Đơn sent quá 24 giờ (link tải hết hạn): người mua mua lại được, đơn quay về pending với n tăng 1.
     // Người mua chỉ đổi được trạng thái theo các bước bên dưới; mọi thay đổi khác (gửi tài liệu, chưa thấy tiền,
     // hủy) do admin làm trên trang quản trị hoặc Apps Script chạy bằng tài khoản chủ dự án (không qua Rules).
     function signedIn() {
@@ -67,6 +68,12 @@ service cloud.firestore {
         // Mở lại đơn đã hủy / đơn chờ quá hạn (tính lại giá, mã chuyển khoản theo cấu hình hiện tại)
         || ((from == 'pending' || from == 'cancelled') && to == 'pending'
           && keys.hasOnly(['status', 'updatedAt', 'createdAt', 'price', 'productName', 'code', 'transfer', 'name', 'cancelledAt', 'cancelReason'])
+          && now('updatedAt') && now('createdAt') && validOrderBody(orderId))
+        // Mua lại khi link tải đã gửi quá 24 giờ: mở lại đơn, n = lần mua (lần đầu không ghi n), mã chuyển khoản mới
+        || (from == 'sent' && to == 'pending'
+          && resource.data.sentAt < request.time - duration.value(24, 'h')
+          && keys.hasOnly(['status', 'updatedAt', 'createdAt', 'price', 'productName', 'code', 'transfer', 'name', 'n'])
+          && request.resource.data.n == resource.data.get('n', 1) + 1
           && now('updatedAt') && now('createdAt') && validOrderBody(orderId))
       );
     }
