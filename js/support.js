@@ -368,6 +368,9 @@
     function renderPay() {
       var st = Orders.state(product.id), o = Orders.get(product.id), a = Orders.account();
       var gated = true, html = '';
+      /* Thư từ Gmail mới của Voc-Lang hay rơi vào Thư rác: nhắc người mua xem ở đó và bấm "Không phải thư rác" */
+      var spamTip = '<p class="sp-spam-tip"><i class="bi bi-info-circle"></i> <span>Không thấy email từ <b>Voc-Lang</b>? ' +
+        'Xem mục <b>Thư rác</b> (Spam) và <b>Quảng cáo</b>, rồi bấm <b>Không phải thư rác</b> để các thư sau vào hộp thư đến.</span></p>';
       if (view === 'signin') {
         html = '<i class="bi bi-person-lock sp-gate-icon"></i>' +
           '<p><b>Đăng nhập để mua tài liệu</b></p>' +
@@ -384,8 +387,8 @@
       } else if (st === 'sent') {
         html = '<i class="bi bi-envelope-check sp-gate-icon is-ok"></i>' +
           '<p><b>Đã gửi tài liệu</b></p>' +
-          '<p class="sp-gate-text">Link tải đã được gửi tới <b>' + esc(o.email) + '</b>' + (o.sentAt ? ' lúc ' + when(Orders.ms(o.sentAt)) : '') + '. ' +
-          'Bạn xem hộp thư đến, cả mục Quảng cáo / Spam.</p>' +
+          '<p class="sp-gate-text">Link tải đã được gửi tới <b>' + esc(o.email) + '</b>' + (o.sentAt ? ' lúc ' + when(Orders.ms(o.sentAt)) : '') + '.</p>' +
+          spamTip +
           '<p class="sp-gate-text">Link hết hạn hoặc chưa tải kịp? Trả lời email đó để nhận link mới.</p>';
       } else if (st === 'cancelled' || st === 'expired') {
         html = '<i class="bi bi-x-circle sp-gate-icon"></i>' +
@@ -397,6 +400,7 @@
           '<p><b>Đã báo chuyển khoản</b></p>' +
           '<p class="sp-gate-text">Cảm ơn bạn! Mình đã nhận thông báo lúc ' + when(Orders.ms(o.reportedAt)) + '. ' +
           'Sau khi kiểm tra thanh toán, link tải sẽ được gửi tới <b>' + esc(o.email) + '</b> trong vòng 24 giờ.</p>' +
+          spamTip +
           '<button type="button" class="btn btn-soft w-100" data-order="peek"><i class="bi bi-qr-code"></i> Xem lại thông tin chuyển khoản</button>';
       } else gated = false;
 

@@ -1350,6 +1350,11 @@ html:not(.support-on) .support-entry { display: none !important; }
 .sp-gate-icon.is-ok { color: var(--primary); }
 .sp-gate-text { font-size: .83rem; line-height: 1.5; color: var(--text-muted); }
 .sp-gate-error { margin: .5rem 0 0; font-size: .8rem; color: var(--rose-ink); }
+.sp-spam-tip {
+  display: flex; gap: .45rem; align-items: flex-start; width: 100%; padding: .55rem .7rem; border-radius: 10px;
+  background: var(--amber-soft); color: var(--text); font-size: .8rem; line-height: 1.45; text-align: left;
+}
+.sp-spam-tip .bi { color: var(--amber-ink); margin-top: .1rem; }
 .sp-gate .spinner-border { color: var(--primary); }
 .sp-chip {
   align-self: flex-start; display: inline-flex; align-items: center; gap: .3rem;
