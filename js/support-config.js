@@ -14,14 +14,13 @@ window.SUPPORT_CONFIG = {
     bankId: 'TpBank',
     bankName: 'Ngân hàng TMCP Tiên Phong (Tp bank)',            // tên hiển thị cho người dùng
     accountNo: '01650977801',        // số tài khoản
-    accountName: 'PHAM XUAN VINH',    // tên chủ tài khoản: VIẾT HOA, KHÔNG DẤU
-    contactLink: 'https://zalo.me/...'  // Zalo / Telegram để gửi file nhanh
+    accountName: 'PHAM XUAN VINH'     // tên chủ tài khoản: VIẾT HOA, KHÔNG DẤU
   },
 
   /*
-   * Gói tài liệu. deliveryLink: link tải (Google Drive…) mở ngay khi người mua bấm "Nhận tài liệu".
-   * Để trống '' → nút mở contactLink, người mua nhắn mã đơn để bạn kiểm tra rồi gửi file.
-   * (Trang web tĩnh không tự xác nhận được giao dịch, nên đặt deliveryLink nghĩa là tin người mua.)
+   * Gói tài liệu. Người mua đăng nhập Google → web lưu đơn orders/{uid}_{id} (js/support.js, firestore.rules);
+   * bấm "Đã chuyển khoản" → chủ trang nhận email, kiểm tra tài khoản rồi gửi link tải từ trang quản trị (admin-report/).
+   * id phải là một trong hsk13 | audio | combo (Rules kiểm tra). codePrefix nằm trong nội dung chuyển khoản.
    */
   DIGITAL_PRODUCTS: [
     {
@@ -32,8 +31,7 @@ window.SUPPORT_CONFIG = {
       price: 29000,
       badge: 'Bán chạy',
       codePrefix: 'HSK13',
-      description: '3 file PDF A4 (224 trang) luyện 1.068 chữ Hán HSK 1–3: ô điền mễ, thứ tự từng nét, pinyin, âm Hán-Việt và từ HSK có chữ đó.',
-      deliveryLink: ''
+      description: '3 file PDF A4 (224 trang) luyện 1.068 chữ Hán HSK 1–3: ô điền mễ, thứ tự từng nét, pinyin, âm Hán-Việt và từ HSK có chữ đó.'
     },
     {
       id: 'audio',
@@ -43,8 +41,7 @@ window.SUPPORT_CONFIG = {
       price: 39000,
       badge: '',
       codePrefix: 'AUDIO',
-      description: '228 bài MP3 (~22 giờ) cho 5.671 từ HSK 1–6: mỗi từ đọc 2 lần, nghĩa tiếng Việt, câu ví dụ và nghĩa câu. Kèm PDF danh sách từ theo bài để nhìn theo khi nghe.',
-      deliveryLink: ''
+      description: '228 bài MP3 (~22 giờ) cho 5.671 từ HSK 1–6: mỗi từ đọc 2 lần, nghĩa tiếng Việt, câu ví dụ và nghĩa câu. Kèm PDF danh sách từ theo bài để nhìn theo khi nghe.'
     },
     {
       id: 'combo',
@@ -56,7 +53,6 @@ window.SUPPORT_CONFIG = {
       badge: 'Khuyên dùng',
       codePrefix: 'COMBO',
       description: 'Vở luyện viết HSK 1–6 (2.701 chữ, 560 trang) + toàn bộ audio (228 bài, ~22 giờ) + Sổ tay 214 bộ thủ (77 trang, chiết tự nhớ nhanh).',
-      deliveryLink: '',
       default: true                 // gói được chọn sẵn
     }
   ],

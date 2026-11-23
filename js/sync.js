@@ -452,6 +452,12 @@
     flush: flush,
     syncNow: function () { lastPull = 0; return flush().then(function () { return pull(true); }); },
 
+    /* Đơn mua tài liệu (js/support.js) — orders/{uid}_{productId}, quy tắc trong firestore.rules */
+    account: function () { return user ? { uid: user.uid, email: user.email || '', name: user.displayName || '' } : null; },
+    orderRef: function (productId) { return user && db ? db.collection('orders').doc(user.uid + '_' + productId) : null; },
+    serverTime: function () { return firebase.firestore.FieldValue.serverTimestamp(); },
+    deleteField: function () { return firebase.firestore.FieldValue.delete(); },
+
     // Dùng cho kiểm thử
     _merge: { mergeRecord: mergeRecord, mergeDaily: mergeDaily, mergeSettings: mergeSettings, mergeAll: mergeAll, dropBefore: dropBefore, stable: stable }
   };

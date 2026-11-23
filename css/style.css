@@ -1333,6 +1333,50 @@ html:not(.support-on) .support-entry { display: none !important; }
 .sp-copy-mini:hover { background: var(--surface); color: var(--primary-ink); }
 .sp-deliver { margin-top: .9rem; padding-top: .85rem; border-top: 1px dashed var(--border); }
 .sp-deliver-note { margin-bottom: .6rem; font-size: .82rem; line-height: 1.45; color: var(--text-muted); }
+.sp-note-warn { color: var(--rose-ink); font-weight: 600; }
+.sp-link-btn {
+  display: block; width: 100%; margin-top: .45rem; padding: .25rem; border: 0; background: none;
+  font-size: .8rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px;
+}
+.sp-link-btn:hover { color: var(--rose-ink); }
+
+/* Đơn mua (js/support.js): khung đăng nhập / trạng thái đơn thay cho mã QR */
+.sp-pay.is-gated > :not(.sp-gate) { display: none !important; }
+.sp-pay:not(.is-gated) > .sp-gate { display: none; }
+.sp-gate { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding: 1.25rem .25rem; text-align: center; }
+.sp-gate p { margin: 0; }
+.sp-gate .btn { margin-top: .35rem; }
+.sp-gate-icon { font-size: 2rem; line-height: 1; color: var(--text-muted); }
+.sp-gate-icon.is-ok { color: var(--primary); }
+.sp-gate-text { font-size: .83rem; line-height: 1.5; color: var(--text-muted); }
+.sp-gate-error { margin: .5rem 0 0; font-size: .8rem; color: var(--rose-ink); }
+.sp-gate .spinner-border { color: var(--primary); }
+.sp-chip {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: .3rem;
+  padding: .1rem .5rem; border-radius: 999px; font-size: .74rem; font-weight: 600;
+}
+.sp-chip-amber { background: var(--amber-soft); color: var(--amber-ink); }
+.sp-chip-jade { background: var(--primary-soft); color: var(--primary-ink); }
+.sp-chip-rose { background: var(--rose-soft); color: var(--rose-ink); }
+.sp-remind:empty { display: none; }
+.sp-remind-item { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; font-size: .85rem; line-height: 1.5; }
+.sp-remind-item > div:first-child { flex: 1 1 260px; }
+.sp-remind-actions { display: flex; gap: .4rem; }
+/* Có đơn chờ thanh toán quá 10 phút → chấm cam ở các lối vào "Tài liệu học tập" và nút tài khoản (điện thoại) */
+html.sp-order-due .nav-support, html.sp-order-due .account-menu [data-support-open="resources"] { position: relative; }
+html.sp-order-due .nav-support::after,
+html.sp-order-due .account-menu [data-support-open="resources"]::after {
+  content: ""; position: absolute; top: 2px; right: 2px; width: 9px; height: 9px;
+  border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 2px var(--bg);
+}
+html.sp-order-due .account-menu [data-support-open="resources"]::after { top: 50%; right: 1rem; margin-top: -4.5px; }
+@media (max-width: 575.98px) {
+  html.sp-order-due .account-btn { position: relative; }
+  html.sp-order-due .account-btn::before {
+    content: ""; position: absolute; top: 3px; left: 3px; z-index: 1; width: 9px; height: 9px;
+    border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 2px var(--bg);
+  }
+}
 
 @media (max-width: 767.98px) {
   .nav-support span { display: none; }

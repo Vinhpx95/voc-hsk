@@ -88,3 +88,36 @@
   .admin-panel-head { padding: .875rem 1rem; }
   .admin-search { width: 100%; }
 }
+
+/* Đơn hàng tài liệu (js/admin-orders.js) */
+.admin-orders { margin-bottom: 1.25rem; }
+.ord-todo {
+  margin-left: .35rem; padding: .1rem .55rem; border-radius: 999px;
+  background: var(--amber); color: #fff; font-size: .78rem; font-weight: 700; vertical-align: middle;
+}
+.ord-tools { display: flex; gap: .5rem; flex-wrap: wrap; }
+.ord-tools .form-select { width: auto; min-width: 12rem; }
+.ord-search { width: min(100%, 24rem); }
+.ord-script { padding: .55rem 1.25rem; border-bottom: 1px solid var(--border); font-size: .83rem; color: var(--primary-ink); background: var(--primary-soft); }
+.ord-script.is-off { color: var(--amber-ink); background: var(--amber-soft); }
+.ord-link { padding: 0; border: 0; background: none; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.ord-code { font-weight: 700; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.ord-warn { color: var(--amber); }
+.ord-status {
+  display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem;
+  border-radius: 999px; font-size: .78rem; font-weight: 600;
+}
+.ord-amber { background: var(--amber-soft); color: var(--amber-ink); }
+.ord-jade { background: var(--primary-soft); color: var(--primary-ink); }
+.ord-info { background: var(--info-soft); color: var(--tone-3); }
+.ord-rose { background: var(--rose-soft); color: var(--rose-ink); }
+.ord-muted { background: var(--surface-2); color: var(--text-muted); }
+.ord-acts { text-align: right; }
+.ord-acts .btn { margin-left: .3rem; white-space: nowrap; }
+.ord-cancel { color: var(--text-muted); }
+.ord-cancel:hover { color: var(--rose-ink); }
+.ord-table tr.ord-reported td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
+@media (max-width: 575.98px) {
+  .ord-tools, .ord-tools .form-select, .ord-search { width: 100%; }
+  .ord-script { padding: .55rem 1rem; }
+}

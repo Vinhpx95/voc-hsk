@@ -84,6 +84,40 @@
         </div>
       </section>
 
+      <section class="panel admin-panel admin-orders" id="orders">
+        <div class="admin-panel-head">
+          <h2 class="admin-panel-title">Đơn hàng tài liệu <span class="admin-count" id="ord-count"></span>
+            <span class="ord-todo d-none" id="ord-todo"></span></h2>
+          <div class="ord-tools">
+            <select class="form-select" id="ord-status" aria-label="Lọc theo trạng thái">
+              <option value="todo" selected>Cần gửi tài liệu</option>
+            </select>
+            <div class="search-box admin-search ord-search">
+              <i class="bi bi-search"></i>
+              <input type="search" class="form-control" id="ord-q" placeholder="Dán nội dung chuyển khoản, mã đơn hoặc email" aria-label="Tìm đơn">
+            </div>
+          </div>
+        </div>
+        <div class="ord-script" id="ord-script"></div>
+        <div class="callout callout-rose d-none mx-3 mt-3" id="ord-error" role="alert"></div>
+        <div class="table-responsive">
+          <table class="table admin-table ord-table">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Gói</th>
+                <th class="num">Số tiền</th>
+                <th>Người mua</th>
+                <th>Trạng thái</th>
+                <th>Thời gian</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ord-rows"><tr><td colspan="7" class="admin-empty">Đang tải đơn hàng…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="panel admin-panel">
         <div class="admin-panel-head">
           <h2 class="admin-panel-title">Chi tiết tài khoản <span class="admin-count" id="admin-count"></span></h2>
@@ -113,6 +147,8 @@
   </div>
 
   <script src="../js/firebase-config.js"></script>
+  <script src="../js/support-config.js"></script>
+  <script src="../js/admin-orders.js"></script>
   <script src="../js/admin.js"></script>
 </body>
 </html>

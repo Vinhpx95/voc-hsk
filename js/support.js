@@ -28,11 +28,6 @@
   }
   function vnd(n) { return Number(n || 0).toLocaleString('vi-VN') + 'đ'; }
   function short(n) { return n >= 1000 && n % 1000 === 0 ? n / 1000 + 'k' : vnd(n); }
-  function orderCode() {
-    var n = 0;
-    try { n = crypto.getRandomValues(new Uint32Array(1))[0]; } catch (e) { n = Math.floor(Math.random() * 1e9); }
-    return String(1000 + n % 9000);
-  }
   function qrUrl(amount, message) {
     return 'https://img.vietqr.io/image/' + encodeURIComponent(P.bankId) + '-' + encodeURIComponent(P.accountNo) +
       '-compact2.png?amount=' + amount + '&addInfo=' + encodeURIComponent(message) +
@@ -222,20 +217,133 @@
   }
 
   /* ============================================================
+   * Đơn mua tài liệu — Firestore orders/{uid}_{productId} (quy tắc trong firestore.rules)
+   *   pending   chờ thanh toán (lưu ngay khi mã QR hiện ra)
+   *   reported  người mua bấm "Đã chuyển khoản" → Apps Script báo email cho chủ trang
+   *   sent      chủ trang đã gửi link tải · unpaid: chưa thấy tiền · cancelled: đã hủy
+   * Mỗi tài khoản một đơn cho mỗi gói, mã chuyển khoản cố định theo tài khoản + gói.
+   * ============================================================ */
+  var MINUTE = 60 * 1000, DAY = 24 * 60 * MINUTE;
+  var REMIND_AFTER = 10 * MINUTE;      // đơn chờ quá 10 phút chưa báo chuyển khoản → nhắc
+  var EXPIRE_AFTER = 7 * DAY;          // đơn chờ quá 7 ngày → coi như đã hủy
+  var CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // bỏ 0/O, 1/I cho dễ đọc
+  var Orders = (function () {
+    var data = {}, uid = '';           // productId → dữ liệu đơn (null: chưa có)
+    function cloud() { return window.Cloud; }
+    function account() { var c = cloud(); return c && c.account ? c.account() : null; }
+    function ref(pid) { return cloud().orderRef(pid); }
+    function T() { return cloud().serverTime(); }
+    function ms(t) { return t && t.toMillis ? t.toMillis() : 0; }
+    /** Mã 6 ký tự từ SHA-256(uid:productId) */
+    function codeFor(u, pid) {
+      var text = u + ':' + pid;
+      var bytes = window.crypto && crypto.subtle
+        ? crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (b) { return new Uint8Array(b); })
+        : Promise.resolve(new Uint8Array(text.split('').map(function (c, i) { return (c.charCodeAt(0) * 31 + i * 7) & 255; })));
+      return bytes.then(function (b) {
+        var out = '';
+        for (var i = 0; i < 6; i++) out += CODE_CHARS[b[i] % 32];
+        return out;
+      });
+    }
+    function transferOf(p, code) { return 'Tai lieu ' + p.codePrefix + ' ' + code; }
+    /** Trạng thái để hiển thị: none | pending | reported | sent | unpaid | cancelled | expired */
+    function state(pid) {
+      var o = data[pid];
+      if (!o) return 'none';
+      if (o.status === 'pending' && Date.now() - ms(o.createdAt) > EXPIRE_AFTER) return 'expired';
+      return o.status;
+    }
+    function fetchOne(pid) {
+      return ref(pid).get().then(function (s) { data[pid] = s.exists ? s.data() : null; return data[pid]; });
+    }
+    function load() {
+      var a = account();
+      if (!a) { data = {}; uid = ''; return Promise.resolve(); }
+      if (uid !== a.uid) { data = {}; uid = a.uid; }
+      return Promise.all(PRODUCTS.map(function (p) { return fetchOne(p.id); }));
+    }
+    /** Mã QR hiện ra → bảo đảm có đơn "chờ thanh toán" (tạo mới, hoặc mở lại đơn đã hủy / quá hạn / đổi giá) */
+    function ensure(p) {
+      var a = account();
+      if (!a) return Promise.reject(new Error('signed-out'));
+      return codeFor(a.uid, p.id).then(function (code) {
+        var o = data[p.id], st = state(p.id);
+        var body = { name: (a.name || '').slice(0, 100), productName: p.name, price: p.price, code: code, transfer: transferOf(p, code) };
+        if (st === 'none') {
+          return ref(p.id).set(Object.assign({ uid: a.uid, email: a.email, productId: p.id, status: 'pending', createdAt: T(), updatedAt: T() }, body))
+            .then(function () { return fetchOne(p.id); });
+        }
+        var stale = st === 'pending' && (o.price !== p.price || o.productName !== p.name || o.transfer !== body.transfer);
+        if (st === 'cancelled' || st === 'expired' || stale) {
+          return ref(p.id).update(Object.assign({ status: 'pending', createdAt: T(), updatedAt: T(), cancelledAt: cloud().deleteField(), cancelReason: cloud().deleteField() }, body))
+            .then(function () { return fetchOne(p.id); });
+        }
+        return o;
+      });
+    }
+    function report(pid) {
+      return ref(pid).update({ status: 'reported', updatedAt: T(), reportedAt: T() }).then(function () { return fetchOne(pid); });
+    }
+    function cancel(pid) {
+      return ref(pid).update({ status: 'cancelled', updatedAt: T(), cancelledAt: T(), cancelReason: 'buyer' }).then(function () { return fetchOne(pid); });
+    }
+    /** Đơn chờ thanh toán từ 10 phút đến 7 ngày → cần nhắc */
+    function due() {
+      return PRODUCTS.filter(function (p) {
+        var age = data[p.id] && Date.now() - ms(data[p.id].createdAt);
+        return state(p.id) === 'pending' && age >= REMIND_AFTER;
+      });
+    }
+    /** Lần kiểm tra nhắc tiếp theo (ms), 0 nếu không cần */
+    function nextCheck() {
+      var t = 0;
+      PRODUCTS.forEach(function (p) {
+        if (state(p.id) !== 'pending') return;
+        var left = REMIND_AFTER - (Date.now() - ms(data[p.id].createdAt));
+        if (left > 0 && (!t || left < t)) t = left;
+      });
+      return t;
+    }
+    return { load: load, ensure: ensure, report: report, cancel: cancel, state: state, get: function (pid) { return data[pid]; },
+      due: due, nextCheck: nextCheck, ms: ms, account: account };
+  })();
+
+  function when(t) {
+    return t ? new Date(t).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+  }
+  var STATUS_CHIP = {
+    pending: ['sp-chip-amber', 'bi-hourglass-split', 'Chờ thanh toán'],
+    reported: ['sp-chip-jade', 'bi-send-check', 'Đã báo chuyển khoản'],
+    sent: ['sp-chip-jade', 'bi-envelope-check', 'Đã gửi tài liệu'],
+    unpaid: ['sp-chip-rose', 'bi-exclamation-circle', 'Chưa thấy tiền']
+  };
+
+  /* ============================================================
    * Modal 1: Tài liệu học tập
    * ============================================================ */
   function initResources(modal) {
-    var pay = PayPanel($('.sp-pay', modal), modal);
+    var payRoot = $('.sp-pay', modal);
+    var pay = PayPanel(payRoot, modal);
     var product = PRODUCTS.filter(function (p) { return p.default; })[0] || PRODUCTS[PRODUCTS.length - 1];
-    var code = orderCode();
+    var view = 'idle';          // idle | signin | loading | error | order
+    var peek = false;           // đơn đã báo chuyển khoản: bấm "Xem lại thông tin chuyển khoản"
+    var errText = '', busy = false, token = 0, remindTimer = null, pickOnLoad = false;
 
-    pay.extra.innerHTML =
-      '<div class="sp-deliver"><p class="sp-deliver-note"></p>' +
-      '<a class="btn btn-primary w-100" href="#" target="_blank" rel="noopener"></a></div>';
+    var gate = document.createElement('div');
+    gate.className = 'sp-gate';
+    payRoot.appendChild(gate);
+    var remind = document.createElement('div');
+    remind.className = 'sp-remind';
+    $('.modal-body', modal).insertBefore(remind, $('.sp-layout', modal));
+
+    function cloud() { return window.Cloud; }
+    function signedIn() { return !!Orders.account(); }
+    function cardFor(pid) { return $('.sp-product input[value="' + pid + '"]', modal); }
 
     function renderList() {
       $('.sp-products', modal).innerHTML = PRODUCTS.map(function (p) {
-        var on = p === product;
+        var on = p === product, chip = STATUS_CHIP[Orders.state(p.id)];
         return '<label class="sp-product' + (on ? ' active' : '') + '">' +
           '<input type="radio" name="sp-product" value="' + esc(p.id) + '"' + (on ? ' checked' : '') + '>' +
           '<span class="sp-product-icon"><i class="bi ' + esc(p.icon || 'bi-file-earmark') + '"></i></span>' +
@@ -245,6 +353,7 @@
               (p.badge ? '<span class="sp-badge' + (p.default ? ' sp-badge-jade' : '') + '">' + esc(p.badge) + '</span>' : '') +
             '</span>' +
             '<span class="sp-product-desc">' + esc(p.description) + '</span>' +
+            (chip ? '<span class="sp-chip ' + chip[0] + '"><i class="bi ' + chip[1] + '"></i> ' + chip[2] + '</span>' : '') +
             '<span class="sp-product-foot">' +
               (p.format ? '<span class="sp-format">' + esc(p.format) + '</span>' : '') +
               '<span class="sp-price">' + vnd(p.price) + (p.originalPrice ? ' <s>' + vnd(p.originalPrice) + '</s>' : '') + '</span>' +
@@ -254,27 +363,175 @@
         '</label>';
       }).join('');
     }
+
+    /* Khung bên phải: đăng nhập / đang tải / lỗi / trạng thái đơn / mã QR */
     function renderPay() {
-      pay.update(product.price, 'Tai lieu ' + product.codePrefix + ' ' + code, product.name);
-      var direct = !!product.deliveryLink;
-      $('.sp-deliver-note', modal).innerHTML = direct
-        ? 'Sau khi chuyển khoản, bấm nút bên dưới để nhận link tải file ngay lập tức.'
-        : 'Sau khi chuyển khoản, bấm nút bên dưới và nhắn mã đơn <b>' + esc(product.codePrefix + ' ' + code) + '</b> để nhận link tải file ngay.';
-      var btn = $('.sp-deliver .btn', modal);
-      btn.href = direct ? product.deliveryLink : P.contactLink;
-      btn.innerHTML = '<i class="bi ' + (direct ? 'bi-cloud-arrow-down' : 'bi-chat-dots') + '"></i> Đã chuyển khoản · Nhận tài liệu';
+      var st = Orders.state(product.id), o = Orders.get(product.id), a = Orders.account();
+      var gated = true, html = '';
+      if (view === 'signin') {
+        html = '<i class="bi bi-person-lock sp-gate-icon"></i>' +
+          '<p><b>Đăng nhập để mua tài liệu</b></p>' +
+          '<p class="sp-gate-text">Mã chuyển khoản được tạo theo tài khoản của bạn. Tài liệu được gửi tới email Google của bạn trong vòng 24 giờ sau khi xác nhận thanh toán.</p>' +
+          (cloud() && cloud().canSignIn()
+            ? '<button type="button" class="btn btn-primary w-100" data-order="signin"><i class="bi bi-google"></i> Đăng nhập Google</button>'
+            : '<p class="sp-gate-text">Mở Voc-Lang trên trình duyệt (Chrome, Safari…) để đăng nhập và mua.</p>') +
+          (errText ? '<p class="sp-gate-error">' + errText + '</p>' : '');
+      } else if (view === 'loading' || view === 'idle') {
+        html = '<span class="spinner-border spinner-border-sm"></span><p class="sp-gate-text">Đang tạo đơn…</p>';
+      } else if (view === 'error') {
+        html = '<i class="bi bi-wifi-off sp-gate-icon"></i><p class="sp-gate-text">' + errText + '</p>' +
+          '<button type="button" class="btn btn-soft w-100" data-order="retry"><i class="bi bi-arrow-clockwise"></i> Thử lại</button>';
+      } else if (st === 'sent') {
+        html = '<i class="bi bi-envelope-check sp-gate-icon is-ok"></i>' +
+          '<p><b>Đã gửi tài liệu</b></p>' +
+          '<p class="sp-gate-text">Link tải đã được gửi tới <b>' + esc(o.email) + '</b>' + (o.sentAt ? ' lúc ' + when(Orders.ms(o.sentAt)) : '') + '. ' +
+          'Bạn xem hộp thư đến, cả mục Quảng cáo / Spam.</p>' +
+          '<p class="sp-gate-text">Link hết hạn hoặc chưa tải kịp? Trả lời email đó để nhận link mới.</p>';
+      } else if (st === 'cancelled' || st === 'expired') {
+        html = '<i class="bi bi-x-circle sp-gate-icon"></i>' +
+          '<p><b>Đã hủy đơn</b></p>' +
+          '<p class="sp-gate-text">' + (st === 'expired' ? 'Đơn chờ thanh toán quá 7 ngày nên đã tự hủy.' : 'Bạn đã hủy đơn gói này.') + ' Muốn mua thì bấm nút bên dưới để tạo lại mã chuyển khoản.</p>' +
+          '<button type="button" class="btn btn-primary w-100" data-order="reopen"><i class="bi bi-cart"></i> Mua gói này</button>';
+      } else if (st === 'reported' && !peek) {
+        html = '<i class="bi bi-send-check sp-gate-icon is-ok"></i>' +
+          '<p><b>Đã báo chuyển khoản</b></p>' +
+          '<p class="sp-gate-text">Cảm ơn bạn! Mình đã nhận thông báo lúc ' + when(Orders.ms(o.reportedAt)) + '. ' +
+          'Sau khi kiểm tra thanh toán, link tải sẽ được gửi tới <b>' + esc(o.email) + '</b> trong vòng 24 giờ.</p>' +
+          '<button type="button" class="btn btn-soft w-100" data-order="peek"><i class="bi bi-qr-code"></i> Xem lại thông tin chuyển khoản</button>';
+      } else gated = false;
+
+      payRoot.classList.toggle('is-gated', gated);
+      gate.innerHTML = html;
+      if (gated) return;
+
+      pay.update(product.price, o.transfer, product.name);
+      var note, btns = '';
+      if (st === 'reported') {
+        note = 'Bạn đã báo chuyển khoản cho đơn này. Link tải sẽ được gửi tới <b>' + esc(o.email) + '</b> trong vòng 24 giờ sau khi xác nhận thanh toán.';
+      } else {
+        note = (st === 'unpaid'
+          ? '<span class="sp-note-warn"><i class="bi bi-exclamation-circle"></i> Mình chưa thấy khoản chuyển cho đơn này.</span> Nếu bạn đã chuyển, kiểm tra lại số tiền và nội dung rồi bấm nút bên dưới lần nữa. '
+          : 'Chuyển khoản đúng số tiền và nội dung, rồi bấm nút bên dưới. ') +
+          'Link tải sẽ được gửi tới <b>' + esc(a ? a.email : o.email) + '</b> trong vòng 24 giờ sau khi xác nhận thanh toán.';
+        btns = '<button type="button" class="btn btn-primary w-100" data-order="report"' + (busy ? ' disabled' : '') + '><i class="bi bi-send-check"></i> Đã chuyển khoản</button>' +
+          (st === 'pending' ? '<button type="button" class="sp-link-btn" data-order="cancel"' + (busy ? ' disabled' : '') + '>Tôi chưa mua, hủy đơn này</button>' : '');
+      }
+      pay.extra.innerHTML = '<div class="sp-deliver"><p class="sp-deliver-note">' + note + '</p>' + btns +
+        (errText ? '<p class="sp-gate-error">' + errText + '</p>' : '') + '</div>';
     }
 
+    /* Nhắc đơn chờ thanh toán: chấm cam ở lối vào + dòng nhắc trong cửa sổ */
+    function renderRemind() {
+      var list = signedIn() ? Orders.due() : [];
+      document.documentElement.classList.toggle('sp-order-due', list.length > 0);
+      remind.innerHTML = list.map(function (p) {
+        var o = Orders.get(p.id);
+        return '<div class="callout callout-amber sp-remind-item">' +
+          '<div><i class="bi bi-bell"></i> Đơn <b>' + esc(p.name) + '</b> (' + vnd(o.price) + ', nội dung <b class="sp-mono">' + esc(o.transfer) + '</b>) ' +
+          'đang chờ thanh toán từ ' + when(Orders.ms(o.createdAt)) + '. Nếu bạn đã chuyển khoản, bấm <b>Đã chuyển khoản</b> để mình gửi tài liệu.</div>' +
+          '<div class="sp-remind-actions">' +
+            '<button type="button" class="btn btn-primary btn-sm" data-order="report" data-pid="' + esc(p.id) + '">Đã chuyển khoản</button>' +
+            '<button type="button" class="btn btn-soft btn-sm" data-order="cancel" data-pid="' + esc(p.id) + '">Tôi chưa mua</button>' +
+          '</div></div>';
+      }).join('');
+      clearTimeout(remindTimer);
+      var t = Orders.nextCheck();
+      if (t) remindTimer = setTimeout(function () { renderRemind(); }, t + 1000);
+    }
+
+    function renderAll() { renderList(); renderPay(); renderRemind(); }
+
+    /** Mở cửa sổ / đổi gói / vừa đăng nhập: tải đơn rồi bảo đảm gói đang chọn có đơn chờ thanh toán */
+    /** reopen: người mua bấm "Mua gói này" trên đơn đã hủy / quá hạn (mở cửa sổ thì không tự mở lại, tránh nhắc lặp) */
+    function refresh(reopen) {
+      var t = ++token;
+      errText = ''; peek = false;
+      if (!signedIn()) {
+        var c = cloud(), waiting = c && c.mode && c.mode() === 'user' && !c.info().authResolved;
+        view = waiting ? 'loading' : 'signin';
+        return renderAll();
+      }
+      view = 'loading'; renderPay();
+      Orders.load().then(function () {
+        if (t !== token) return;
+        if (pickOnLoad) {
+          // Vừa mở cửa sổ: chọn sẵn gói đang có đơn cần xử lý (chờ thanh toán quá 10 phút / đã báo chuyển khoản)
+          pickOnLoad = false;
+          var pick = Orders.due()[0] || PRODUCTS.filter(function (p) { return Orders.state(p.id) === 'reported'; })[0];
+          if (pick) product = pick;
+        }
+        var st = Orders.state(product.id);
+        if (st === 'sent' || st === 'reported' || st === 'unpaid') return null;
+        if ((st === 'cancelled' || st === 'expired') && !reopen) return null;
+        return Orders.ensure(product);
+      }).then(function () {
+        if (t !== token) return;
+        view = 'order'; renderAll();
+      }).catch(function (e) {
+        if (t !== token) return;
+        console.warn('[orders]', e);
+        view = 'error';
+        errText = e && e.code === 'permission-denied'
+          ? 'Chưa tạo được đơn (máy chủ từ chối). Bạn thử lại sau ít phút nhé.'
+          : 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+        renderAll();
+      });
+    }
+
+    function act(kind, pid) {
+      var p = PRODUCTS.filter(function (x) { return x.id === (pid || product.id); })[0];
+      if (!p || busy) return;
+      var o = Orders.get(p.id);
+      if (kind === 'report' && !window.confirm('Bạn đã chuyển ' + vnd(o.price) + ' với nội dung "' + o.transfer + '"?\n\nBấm OK để báo cho mình kiểm tra và gửi tài liệu.')) return;
+      busy = true; errText = ''; renderPay();
+      (kind === 'report' ? Orders.report(p.id) : Orders.cancel(p.id)).then(function () {
+        busy = false; peek = false;
+        if (kind === 'report' && p !== product) { product = p; }
+        renderAll();
+      }).catch(function (e) {
+        console.warn('[orders]', e);
+        busy = false;
+        errText = 'Chưa lưu được, kiểm tra mạng rồi thử lại.';
+        renderAll();
+      });
+    }
+
+    modal.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-order]');
+      if (!b) return;
+      var k = b.dataset.order;
+      if (k === 'signin') {
+        errText = '';
+        var p;
+        try { p = cloud().signIn(); } catch (err) { p = Promise.reject(err); }
+        p.catch(function (err) {
+          if (err && (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request')) return;
+          errText = 'Đăng nhập chưa thành công, vui lòng thử lại.';
+          renderPay();
+        });
+      } else if (k === 'retry') refresh();
+      else if (k === 'reopen') refresh(true);
+      else if (k === 'peek') { peek = true; renderPay(); }
+      else act(k, b.dataset.pid);
+    });
     modal.addEventListener('change', function (e) {
       if (e.target.name !== 'sp-product') return;
       product = PRODUCTS.filter(function (p) { return p.id === e.target.value; })[0] || product;
-      code = orderCode();
       $$('.sp-product', modal).forEach(function (l) { l.classList.toggle('active', l.contains(e.target)); });
-      renderPay();
+      refresh();
     });
-    modal.addEventListener('show.bs.modal', function () { code = orderCode(); renderPay(); });   // mỗi lần mở: mã đơn mới
+    modal.addEventListener('show.bs.modal', function () { pickOnLoad = true; refresh(); });
+    // Đăng nhập / đăng xuất / vừa khôi phục phiên → tải lại đơn để hiện chấm nhắc ở lối vào
+    var lastUid = null;
+    window.addEventListener('authchange', function () {
+      var a = Orders.account(), id = a ? a.uid : '';
+      if (id === lastUid) return;
+      lastUid = id;
+      if (modal.classList.contains('show')) return refresh();
+      if (!a) return renderRemind();
+      Orders.load().then(renderRemind).catch(function (e) { console.warn('[orders]', e); });
+    });
     renderList();
-    renderPay();
   }
 
   /* ============================================================

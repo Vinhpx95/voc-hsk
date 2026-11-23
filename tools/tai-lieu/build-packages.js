@@ -115,7 +115,7 @@ ${p.sections.map(s => SECTIONS[s]).join('\n')}
 <h2>Học cùng ứng dụng Voc-Lang</h2>
 <p>Ứng dụng miễn phí: <a href="${APP_URL}">${APP_URL}</a>. Có thẻ học từ vựng HSK 1–9, ôn tập theo lịch, luyện viết từng nét trên màn hình.
 Đăng nhập Google để lưu tiến độ trên nhiều thiết bị.</p>
-<div class="box"><b>Lưu file ngay sau khi tải.</b> Link tải trong email chỉ dùng được trong 12 giờ.
+<div class="box"><b>Lưu file ngay sau khi tải.</b> Link tải trong email chỉ dùng được trong 24 giờ.
 Nếu cần hỗ trợ (tải lỗi, thiếu file, cần link mới) thì bạn <b>trả lời email đã nhận link</b>, mình sẽ phản hồi sớm.</div>
 <p class="foot">Tài liệu dành cho người mua dùng cho việc học của mình. Vui lòng không chia sẻ lại, không đăng tải công khai và không bán lại.
 Nguồn dữ liệu và bản quyền phông, nét chữ được ghi ở trang cuối mỗi file PDF.</p>

@@ -165,10 +165,11 @@
     $('#admin-who').textContent = user.email;
     $('#admin-gate').remove();
     $('#admin-app').classList.remove('d-none');
-    $('#btn-refresh').addEventListener('click', load);
+    $('#btn-refresh').addEventListener('click', function () { load(); if (window.AdminOrders) AdminOrders.load(); });
     $('#btn-export').addEventListener('click', exportCsv);
     $('#admin-q').addEventListener('input', renderTable);
     load();
+    if (window.AdminOrders) AdminOrders.start(db);   // mục Đơn hàng tài liệu (js/admin-orders.js)
   }
 
   loadScript(SDK + 'firebase-app-compat.js')
