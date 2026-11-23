@@ -11,9 +11,9 @@ window.SUPPORT_CONFIG = {
 
   PAYMENT_CONFIG: {
     // Mã ngân hàng theo VietQR (cột "code" hoặc "bin" tại https://api.vietqr.io/v2/banks), ví dụ: MB, VCB, TCB, ACB, 970422…
-    bankId: 'TpBank',
-    bankName: 'Ngân hàng TMCP Tiên Phong (Tp bank)',            // tên hiển thị cho người dùng
-    accountNo: '01650977801',        // số tài khoản
+    bankId: '970407',
+    bankName: 'Ngân hàng Thương mại Cổ phần Kỹ thương Việt Nam (Techcombank)',            // tên hiển thị cho người dùng
+    accountNo: '19077757522016',        // số tài khoản
     accountName: 'PHAM XUAN VINH'     // tên chủ tài khoản: VIẾT HOA, KHÔNG DẤU
   },
 
