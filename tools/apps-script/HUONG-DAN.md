@@ -10,8 +10,9 @@ Script chạy bằng tài khoản Google của bạn và làm hai việc:
 Mã nguồn: [Code.gs](Code.gs) và [appsscript.json](appsscript.json). Khóa R2 không nằm trong mã nguồn mà nằm trong
 Script Properties, chỉ bạn xem được.
 
-> Dùng đúng **tài khoản Google là chủ dự án Firebase `voc-lang-hsk`** (cũng là email admin của trang quản trị).
-> Script đọc và ghi đơn hàng bằng quyền của tài khoản này.
+> Dùng **tài khoản admin của trang quản trị** (hiện là Gmail riêng của Voc-Lang). Tài khoản này phải là thành viên
+> dự án Firebase `voc-lang-hsk` với vai trò **Owner** hoặc **Editor** (Firebase Console → bánh răng → *Users and
+> permissions*). Script đọc và ghi đơn hàng bằng quyền của tài khoản này, và thư gửi người mua đi từ Gmail của nó.
 
 ## 1. Tạo khóa R2 chỉ được đọc
 
@@ -85,7 +86,7 @@ Sau khi trang mới đã lên GitHub (bước 6.6): mở trang quản trị → 
 ## Gửi thư bằng Gmail riêng của Voc-Lang
 
 Để người mua thấy thư từ `Voc-Lang <voclang.hsk@gmail.com>` thay cho Gmail cá nhân. Script vẫn chạy bằng tài khoản cũ
-(chủ Firebase), chỉ đổi địa chỉ gửi.
+(tài khoản admin), chỉ đổi địa chỉ gửi. Không cần mục này nếu script đã chạy bằng chính Gmail của Voc-Lang.
 
 1. Trong **Gmail của tài khoản chạy script** → bánh răng → **Xem tất cả chế độ cài đặt** → **Tài khoản và Nhập** →
    **Gửi thư bằng địa chỉ** → **Thêm địa chỉ email khác**. Tên `Voc-Lang`, địa chỉ Gmail mới, **bỏ tích "Coi như bí danh"**.

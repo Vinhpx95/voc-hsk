@@ -1,8 +1,8 @@
 /*
  * Voc-Lang — Google Apps Script gửi tài liệu cho người mua (giai đoạn 6.4). Hướng dẫn: tools/apps-script/HUONG-DAN.md
  *
- * Chạy bằng tài khoản Google của chủ trang (cũng là chủ dự án Firebase voc-lang-hsk), nên đọc / ghi Firestore qua
- * REST bằng quyền chủ dự án (không đi qua Firestore Rules).
+ * Chạy bằng tài khoản Google của chủ trang (tài khoản admin, có quyền Owner / Editor trong dự án Firebase voc-lang-hsk),
+ * nên đọc / ghi Firestore qua REST bằng quyền IAM của tài khoản đó (không đi qua Firestore Rules).
  *
  *   notifyNewOrders()  trigger 5 phút / lần: đơn vừa "đã báo chuyển khoản" → gửi 1 email báo chủ trang, ghi notifiedAt
  *   doGet ?action=send&id=<uid_productId>
@@ -219,7 +219,7 @@ function createDraft(id) {
   patch_(o.id, { status: 'sent', sentAt: now, updatedAt: now });
   return {
     draftId: draft.getId(),
-    draftUrl: 'https://mail.google.com/mail/?authuser=' + encodeURIComponent(ownerEmail_()) + '#drafts?compose=' + draft.getMessage().getId(),
+    draftUrl: 'https://mail.google.com/mail/?authuser=' + encodeURIComponent(Session.getEffectiveUser().getEmail()) + '#drafts?compose=' + draft.getMessage().getId(),
     email: o.email, expires: fmt_(expires)
   };
 }
