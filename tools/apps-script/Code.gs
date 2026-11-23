@@ -12,7 +12,10 @@
  *   setup()            chạy 1 lần trong trình soạn thảo: tạo trigger 5 phút + kiểm tra
  *
  * Khóa R2 (chỉ đọc) nằm trong Project Settings → Script Properties, KHÔNG ghi vào file này:
- *   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET   (tùy chọn: OWNER_EMAIL)
+ *   R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET
+ *   tùy chọn: OWNER_EMAIL  (nhận thư báo đơn mới; mặc định là tài khoản chạy script)
+ *             SENDER_EMAIL (thư gửi người mua đi từ địa chỉ này và người mua trả lời về đây; phải thêm trước trong
+ *                           Gmail → Cài đặt → Tài khoản và Nhập → Gửi thư bằng địa chỉ)
  */
 var PROJECT_ID = 'voc-lang-hsk';
 var ADMIN_URL = 'https://vinhpx95.github.io/voc-hsk/admin-report/';
@@ -30,6 +33,21 @@ var FILES = {
  * ============================================================ */
 function prop_(k) { return PropertiesService.getScriptProperties().getProperty(k) || ''; }
 function ownerEmail_() { return prop_('OWNER_EMAIL') || Session.getEffectiveUser().getEmail(); }
+function senderEmail_() { return prop_('SENDER_EMAIL').trim().toLowerCase(); }
+/** SENDER_EMAIL đã được thêm vào "Gửi thư bằng địa chỉ" của Gmail chưa (GmailApp chỉ gửi được từ các bí danh này) */
+function senderReady_(s) {
+  return GmailApp.getAliases().some(function (a) { return String(a).toLowerCase() === s; });
+}
+/** Tùy chọn cho thư gửi người mua: tên Voc-Lang; có SENDER_EMAIL thì gửi từ địa chỉ đó và người mua trả lời về đó */
+function buyerMailOptions_(html) {
+  var opt = { htmlBody: html, name: 'Voc-Lang' }, s = senderEmail_();
+  if (s) {
+    if (!senderReady_(s)) throw new Error('Gmail chưa có địa chỉ gửi ' + s + '. Thêm trong Gmail → Cài đặt → Tài khoản và Nhập → Gửi thư bằng địa chỉ, hoặc xóa SENDER_EMAIL trong Script Properties.');
+    opt.from = s;
+    opt.replyTo = s;
+  }
+  return opt;
+}
 function fmt_(d) { return d ? Utilities.formatDate(d, TZ, 'HH:mm dd/MM/yyyy') : ''; }
 function vnd_(n) { return String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + 'đ'; }
 function esc_(s) {
@@ -192,10 +210,12 @@ function createDraft(id) {
   if (!o) throw new Error('Không tìm thấy đơn ' + id);
   if (o.status === 'cancelled') throw new Error('Đơn đã hủy. Mở lại đơn trên trang quản trị trước khi gửi.');
   var f = FILES[o.productId];
+  var opt = buyerMailOptions_('');   // kiểm tra địa chỉ gửi trước khi tạo link và ghi đơn
   var now = new Date(), expires = new Date(now.getTime() + LINK_HOURS * 3600 * 1000);
   var url = presign_(f.key, LINK_HOURS, now);
   var m = buyerMail_(o, url, expires);
-  var draft = GmailApp.createDraft(o.email, m.subject, m.plain, { htmlBody: m.html, name: 'Voc-Lang' });
+  opt.htmlBody = m.html;
+  var draft = GmailApp.createDraft(o.email, m.subject, m.plain, opt);
   patch_(o.id, { status: 'sent', sentAt: now, updatedAt: now });
   return {
     draftId: draft.getId(),
@@ -289,6 +309,14 @@ function checks_() {
   var t = ScriptApp.getProjectTriggers().filter(function (x) { return x.getHandlerFunction() === 'notifyNewOrders'; }).length;
   out.push([t === 1, t === 1 ? 'Trigger báo đơn mới: đã bật (5 phút / lần).' : 'Trigger báo đơn mới: chưa bật — chạy hàm setup() trong trình soạn thảo.']);
   out.push([true, 'Email nhận báo đơn: ' + ownerEmail_()]);
+  var s = senderEmail_();
+  if (!s) out.push([true, 'Thư gửi người mua đi từ: ' + Session.getEffectiveUser().getEmail() + ' (chưa đặt SENDER_EMAIL).']);
+  else {
+    var ready = false;
+    try { ready = senderReady_(s); } catch (e) { /* để ready = false */ }
+    out.push([ready, ready ? 'Thư gửi người mua đi từ: ' + s + ' (người mua trả lời cũng về địa chỉ này).'
+      : 'SENDER_EMAIL = ' + s + ' nhưng Gmail chưa có địa chỉ gửi này. Thêm trong Gmail → Cài đặt → Tài khoản và Nhập → Gửi thư bằng địa chỉ.']);
+  }
   return out;
 }
 

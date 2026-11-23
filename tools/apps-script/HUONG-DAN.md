@@ -48,7 +48,11 @@ Khóa này chỉ tải file về được, không ghi hay xóa được gì tron
 | `R2_SECRET_ACCESS_KEY` | Secret Access Key của khóa chỉ-đọc vừa tạo |
 | `R2_BUCKET` | `voc-lang-hsk-tai-lieu` |
 
-Tùy chọn: `OWNER_EMAIL` nếu muốn email báo đơn mới gửi tới địa chỉ khác (mặc định là tài khoản chạy script).
+Tùy chọn:
+
+- `OWNER_EMAIL`: nhận email báo đơn mới ở địa chỉ khác (mặc định là tài khoản chạy script).
+- `SENDER_EMAIL`: thư gửi người mua đi từ địa chỉ này thay cho Gmail cá nhân, người mua trả lời cũng về đây
+  (xem mục *Gửi thư bằng Gmail riêng của Voc-Lang* bên dưới).
 
 Bấm **Save script properties**.
 
@@ -77,6 +81,22 @@ Bấm **Save script properties**.
 
 Sau khi trang mới đã lên GitHub (bước 6.6): mở trang quản trị → mục **Đơn hàng tài liệu** → **Dán URL Apps Script**
 → dán Web app URL. URL lưu trên trình duyệt đó; dùng máy khác thì dán lại một lần.
+
+## Gửi thư bằng Gmail riêng của Voc-Lang
+
+Để người mua thấy thư từ `Voc-Lang <voclang.hsk@gmail.com>` thay cho Gmail cá nhân. Script vẫn chạy bằng tài khoản cũ
+(chủ Firebase), chỉ đổi địa chỉ gửi.
+
+1. Trong **Gmail của tài khoản chạy script** → bánh răng → **Xem tất cả chế độ cài đặt** → **Tài khoản và Nhập** →
+   **Gửi thư bằng địa chỉ** → **Thêm địa chỉ email khác**. Tên `Voc-Lang`, địa chỉ Gmail mới, **bỏ tích "Coi như bí danh"**.
+   Mở hộp thư Gmail mới để bấm link / lấy mã xác minh.
+2. (Nên làm) Trong **Gmail mới** → **Chuyển tiếp và POP/IMAP** → chuyển tiếp về Gmail cá nhân, để thấy ngay khi người
+   mua trả lời.
+3. Apps Script → **Project Settings** → **Script Properties** → thêm `SENDER_EMAIL` = địa chỉ Gmail mới → Save.
+4. Chạy lại hàm **`setup`**: phải có dòng `OK   Thư gửi người mua đi từ: <Gmail mới> …`.
+   Nếu là `LỖI` thì bước 1 chưa xác minh xong.
+
+Xóa `SENDER_EMAIL` thì thư lại đi từ Gmail cá nhân.
 
 ## Khi sửa Code.gs sau này
 
