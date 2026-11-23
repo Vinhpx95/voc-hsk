@@ -117,7 +117,8 @@
       if (s !== 'cancelled' && s !== 'expired') {
         acts += '<button type="button" class="btn btn-sm ' + (s === 'sent' ? 'btn-soft' : 'btn-primary') + '" data-ord="send" data-id="' + esc(o.id) + '">' +
           '<i class="bi bi-envelope-paper"></i> ' + (s === 'sent' ? 'Gửi lại link' : 'Gửi tài liệu') + '</button>';
-        if (s === 'reported' || s === 'pending') acts += '<button type="button" class="btn btn-sm btn-soft" data-ord="unpaid" data-id="' + esc(o.id) + '">Chưa thấy tiền</button>';
+        // Luôn có nút nhắc thanh toán (kể cả đơn đã gửi: phòng khi kiểm tra nhầm)
+        acts += '<button type="button" class="btn btn-sm btn-soft" data-ord="unpaid" data-id="' + esc(o.id) + '">Chưa thấy tiền</button>';
         if (s !== 'sent') acts += '<button type="button" class="btn btn-sm btn-soft ord-cancel" data-ord="cancel" data-id="' + esc(o.id) + '" title="Hủy đơn"><i class="bi bi-x-lg"></i></button>';
       }
       return '<tr class="ord-' + s + '">' +
@@ -167,7 +168,9 @@
       // Apps Script tạo link 24 giờ + thư nháp, ghi đơn "đã gửi", rồi mở thư nháp. Quay lại trang này sẽ tự làm mới.
       window.open(url + '?action=send&id=' + encodeURIComponent(o.id), '_blank', 'noopener');
     } else if (kind === 'unpaid') {
-      if (!window.confirm('Đánh dấu đơn ' + o.code + ' là "Chưa thấy tiền" và mở Gmail soạn thư nhắc người mua?')) return;
+      var sentNote = state(o) === 'sent' ? '\n\nĐơn này đã gửi tài liệu: link đã gửi vẫn tải được tới hết 24 giờ, không thu hồi được. ' +
+        'Người mua sẽ thấy lại mã QR và nút "Đã chuyển khoản".' : '';
+      if (!window.confirm('Đánh dấu đơn ' + o.code + ' là "Chưa thấy tiền" và mở Gmail soạn thư nhắc người mua?' + sentNote)) return;
       // Mở Gmail ngay trong lần bấm (trình duyệt chặn cửa sổ mở sau khi chờ mạng), rồi mới ghi trạng thái
       gmail(o.email, 'Voc-Lang: chưa thấy thanh toán cho đơn ' + o.code,
         'Chào ' + (o.name || 'bạn') + ',\n\n' +
