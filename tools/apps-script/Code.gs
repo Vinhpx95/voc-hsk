@@ -38,9 +38,9 @@ function senderEmail_() { return prop_('SENDER_EMAIL').trim().toLowerCase(); }
 function senderReady_(s) {
   return GmailApp.getAliases().some(function (a) { return String(a).toLowerCase() === s; });
 }
-/** Tùy chọn cho thư gửi người mua: tên Voc-Lang; có SENDER_EMAIL thì gửi từ địa chỉ đó và người mua trả lời về đó */
+/** Tùy chọn cho thư gửi người mua: tên Voc-Lang-HSK; có SENDER_EMAIL thì gửi từ địa chỉ đó và người mua trả lời về đó */
 function buyerMailOptions_(html) {
-  var opt = { htmlBody: html, name: 'Voc-Lang' }, s = senderEmail_();
+  var opt = { htmlBody: html, name: 'Voc-Lang-HSK' }, s = senderEmail_();
   if (s) {
     if (!senderReady_(s)) throw new Error('Gmail chưa có địa chỉ gửi ' + s + '. Thêm trong Gmail → Cài đặt → Tài khoản và Nhập → Gửi thư bằng địa chỉ, hoặc xóa SENDER_EMAIL trong Script Properties.');
     opt.from = s;
@@ -171,7 +171,7 @@ function notifyNewOrders() {
       '<p style="color:#6b7280;font-size:12px">Email tự động từ Apps Script Voc-Lang (kiểm tra 5 phút / lần).</p></div>';
     GmailApp.sendEmail(ownerEmail_(), 'Voc-Lang: ' + fresh.length + ' đơn báo chuyển khoản (' + fresh.map(function (o) { return o.code; }).join(', ') + ')',
       fresh.map(function (o) { return o.code + ' · ' + o.productName + ' · ' + vnd_(o.price) + ' · ' + o.email; }).join('\n') + '\n\n' + ADMIN_URL,
-      { htmlBody: html, name: 'Voc-Lang' });
+      { htmlBody: html, name: 'Voc-Lang-HSK' });
     var now = new Date();
     fresh.forEach(function (o) { patch_(o.id, { notifiedAt: now }); });
   } finally {

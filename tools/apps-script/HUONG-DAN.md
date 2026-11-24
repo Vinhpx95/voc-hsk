@@ -85,11 +85,11 @@ Sau khi trang mới đã lên GitHub (bước 6.6): mở trang quản trị → 
 
 ## Gửi thư bằng Gmail riêng của Voc-Lang
 
-Để người mua thấy thư từ `Voc-Lang <voclang.hsk@gmail.com>` thay cho Gmail cá nhân. Script vẫn chạy bằng tài khoản cũ
+Để người mua thấy thư từ `Voc-Lang-HSK <voclang.hsk@gmail.com>` thay cho Gmail cá nhân. Script vẫn chạy bằng tài khoản cũ
 (tài khoản admin), chỉ đổi địa chỉ gửi. Không cần mục này nếu script đã chạy bằng chính Gmail của Voc-Lang.
 
 1. Trong **Gmail của tài khoản chạy script** → bánh răng → **Xem tất cả chế độ cài đặt** → **Tài khoản và Nhập** →
-   **Gửi thư bằng địa chỉ** → **Thêm địa chỉ email khác**. Tên `Voc-Lang`, địa chỉ Gmail mới, **bỏ tích "Coi như bí danh"**.
+   **Gửi thư bằng địa chỉ** → **Thêm địa chỉ email khác**. Tên `Voc-Lang-HSK`, địa chỉ Gmail mới, **bỏ tích "Coi như bí danh"**.
    Mở hộp thư Gmail mới để bấm link / lấy mã xác minh.
 2. (Nên làm) Trong **Gmail mới** → **Chuyển tiếp và POP/IMAP** → chuyển tiếp về Gmail cá nhân, để thấy ngay khi người
    mua trả lời.
