@@ -11,7 +11,7 @@ const fs = require('fs'), path = require('path'), { execFileSync } = require('ch
 const args = process.argv.slice(2);
 const ROOT = path.resolve((args[args.indexOf('--root') + 1] && args.includes('--root')) ? args[args.indexOf('--root') + 1] : 'D:/private/voc-lang-tai-lieu');
 const OUT = path.join(ROOT, 'goi'), TAM = path.join(ROOT, '_tam');
-const APP_URL = 'https://vinhpx95.github.io/voc-hsk/';
+const APP_URL = 'https://voc-hsk.netlify.app/';
 
 /* ---------- Số liệu thật từ file đã tạo ---------- */
 const pagesOf = f => (fs.readFileSync(f, 'latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;

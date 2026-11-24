@@ -35,7 +35,7 @@
     $('#btn-google').addEventListener('click', function () {
       if (!preview) {
         alertBox(Cloud.isFile
-          ? 'Đăng nhập Google chỉ hoạt động khi mở trang qua địa chỉ web, ví dụ <b>vinhpx95.github.io/voc-hsk</b>.'
+          ? 'Đăng nhập Google chỉ hoạt động khi mở trang qua địa chỉ web, ví dụ <b>voc-hsk.netlify.app</b>.'
           : 'Đăng nhập Google đang được thiết lập và sẽ sớm có. Bạn vui lòng quay lại sau ít phút.');
         return;
       }

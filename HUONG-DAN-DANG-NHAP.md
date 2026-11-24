@@ -15,7 +15,7 @@ GitHub trước khi điền cấu hình**. Thêm `?welcome` vào địa chỉ đ
 
 1. Menu trái **Build → Authentication → Get started**.
 2. Tab **Sign-in method → Google → Enable**, chọn *Project support email* → **Save**.
-3. Tab **Settings → Authorized domains → Add domain**: thêm `vinhpx95.github.io`
+3. Tab **Settings → Authorized domains → Add domain**: thêm `voc-hsk.netlify.app` (và `vinhpx95.github.io` nếu vẫn dùng GitHub Pages)
    (`localhost` đã có sẵn để thử trên máy).
 
 ## 3. Tạo Firestore và dán quy tắc bảo mật
@@ -75,7 +75,7 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 
 ## Trang báo cáo quản trị (admin)
 
-Địa chỉ: <https://vinhpx95.github.io/voc-hsk/admin-report/>. Trang không có liên kết ở đâu, không được Google lập chỉ mục,
+Địa chỉ: <https://voc-hsk.netlify.app/admin-report/>. Trang không có liên kết ở đâu, không được Google lập chỉ mục,
 và chỉ mở cho email quản trị. Người chưa đăng nhập hoặc tài khoản khác bị chuyển về trang chủ.
 
 - **Thẻ tổng quan:** tổng tài khoản, tổng lượt sử dụng, người dùng mới 7 ngày qua, người hoạt động hôm nay.
