@@ -190,7 +190,6 @@ function buyerMail_(o, url, expires) {
     'Link tải (' + f.what + ', file zip ' + f.size + '):\n' + url + '\n\n' +
     'Link dùng được trong 24 giờ, đến ' + fmt_(expires) + '. Bạn tải về và lưu lại ngay nhé.\n' +
     'Giải nén file zip, rồi mở file 00-Doc-truoc.pdf trước để biết cách in và cách nghe.\n\n' +
-    'Link hết hạn hoặc tải bị lỗi? Bạn chỉ cần trả lời email này, mình sẽ gửi link mới.\n\n' +
     'Chúc bạn học tốt!\nVoc-Lang-HSK · ' + APP_URL;
   var html = '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.55;color:#1f2937">' +
     '<p>Chào ' + esc_(name) + ',</p>' +
@@ -198,7 +197,6 @@ function buyerMail_(o, url, expires) {
     '<p style="margin:22px 0"><a href="' + esc_(url) + '" style="display:inline-block;padding:12px 20px;background:#0f766e;color:#fff;border-radius:10px;text-decoration:none;font-weight:bold">Tải tài liệu (' + esc_(f.size) + ')</a></p>' +
     '<p style="color:#4b5563;font-size:14px">' + esc_(f.what) + '.<br>Link dùng được trong <b>24 giờ</b>, đến <b>' + fmt_(expires) + '</b>. Bạn tải về và lưu lại ngay nhé.</p>' +
     '<p>Giải nén file zip, rồi mở file <b>00-Doc-truoc.pdf</b> trước để biết cách in và cách nghe.</p>' +
-    '<p>Link hết hạn hoặc tải bị lỗi? Bạn chỉ cần <b>trả lời email này</b>, mình sẽ gửi link mới.</p>' +
     '<p>Chúc bạn học tốt!<br>Voc-Lang-HSK · <a href="' + APP_URL + '" style="color:#0f766e">' + APP_URL + '</a></p></div>';
   return { subject: subject, plain: plain, html: html };
 }
