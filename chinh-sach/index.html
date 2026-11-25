@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#FAF9F5" id="meta-theme-color">
-  <meta name="description" content="Điều khoản sử dụng, điều khoản mua tài liệu, chính sách hoàn tiền và chính sách bảo mật của Voc-Lang-HSK.">
+  <meta name="description" content="Thông tin người bán, quyền và nghĩa vụ, giá, thanh toán, giao hàng, đổi trả và hoàn tiền, chính sách bảo mật của Voc-Lang-HSK.">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -26,22 +26,27 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="../css/style.css">
   <style>
+    /* Mỗi mục ứng với một điều của Nghị định 248/2026/NĐ-CP (Điều 4–16), để chụp và chép vào hồ sơ thông báo nền tảng */
     .policy { max-width: 760px; margin: 0 auto; padding: 1.5rem 0 4rem; }
     .policy h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: .35rem; }
-    .policy h2 { font-size: 1.2rem; font-weight: 700; margin: 2.25rem 0 .75rem; scroll-margin-top: 80px; display: flex; gap: .5rem; align-items: center; }
-    .policy h2 i { color: var(--primary); }
+    .policy section { scroll-margin-top: 76px; padding-top: 1.75rem; }
+    #mua-tai-lieu { display: block; scroll-margin-top: 104px; }   /* liên kết cũ "Điều khoản mua" trong hộp mua → mục Giá */
+    .policy h2 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .75rem; display: flex; gap: .55rem; align-items: baseline; }
+    .policy h2 .no { flex: none; font-size: .78rem; font-weight: 700; letter-spacing: .02em; color: var(--primary-ink); background: var(--primary-soft); border-radius: 999px; padding: .15rem .55rem; }
     .policy h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 .4rem; }
     .policy p, .policy li { line-height: 1.7; }
-    .policy ul { padding-left: 1.2rem; }
+    .policy ul, .policy ol { padding-left: 1.2rem; }
     .policy li + li { margin-top: .25rem; }
     .policy-meta { color: var(--text-muted); font-size: .92rem; }
-    .policy .policy-toc { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
-    .policy-toc a { display: inline-block; padding: .35rem .8rem; border-radius: 999px; background: var(--surface-2); color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
-    .policy-toc a:hover { background: var(--primary-soft); color: var(--primary-ink); }
-    .seller { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; display: grid; grid-template-columns: minmax(110px, auto) 1fr; gap: .45rem 1rem; }
+    .policy .policy-toc { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .35rem .75rem; }
+    .policy-toc a { display: flex; gap: .5rem; padding: .3rem 0; color: var(--text); text-decoration: none; font-size: .92rem; }
+    .policy-toc a span { color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 4.2rem; }
+    .policy-toc a:hover { color: var(--primary-ink); }
+    .seller { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; display: grid; grid-template-columns: minmax(110px, auto) 1fr; gap: .45rem 1rem; margin: 0; }
     .seller dt { font-weight: 600; color: var(--text-muted); font-size: .92rem; }
     .seller dd { margin: 0; overflow-wrap: anywhere; }
     .seller .pending { color: var(--text-muted); font-style: italic; }
+    .na { background: var(--surface-2); border-radius: 10px; padding: .75rem 1rem; }
     .policy table { width: 100%; font-size: .93rem; }
     .policy th, .policy td { padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; text-align: left; }
     .policy th { font-weight: 600; color: var(--text-muted); }
@@ -62,133 +67,220 @@
   <main class="container">
     <article class="policy">
       <h1>Điều khoản &amp; Chính sách</h1>
-      <p class="policy-meta">Áp dụng từ ngày 25/11/2026 cho trang <b>voclanghsk.com</b>.</p>
-      <ul class="policy-toc">
-        <li><a href="#nguoi-ban">Người bán</a></li>
-        <li><a href="#dieu-khoan">Điều khoản sử dụng</a></li>
-        <li><a href="#mua-tai-lieu">Mua tài liệu</a></li>
-        <li><a href="#hoan-tien">Hoàn tiền</a></li>
-        <li><a href="#bao-mat">Bảo mật</a></li>
-        <li><a href="#lien-he">Liên hệ</a></li>
-      </ul>
-
-      <!-- ============ Người bán ============ -->
-      <h2 id="nguoi-ban"><i class="bi bi-shop"></i> Thông tin người bán</h2>
-      <dl class="seller" id="seller">
-        <dt>Người bán</dt><dd data-f="name"></dd>
-        <dt>Chủ hộ</dt><dd data-f="owner"></dd>
-        <dt>Mã số thuế</dt><dd data-f="taxCode"></dd>
-        <dt>Địa chỉ</dt><dd data-f="address"></dd>
-        <dt>Điện thoại</dt><dd data-f="phone"></dd>
-        <dt>Email</dt><dd data-f="email"></dd>
-      </dl>
-
-      <!-- ============ Điều khoản sử dụng ============ -->
-      <h2 id="dieu-khoan"><i class="bi bi-journal-text"></i> Điều khoản sử dụng</h2>
-      <p>Voc-Lang-HSK là trang học từ vựng tiếng Trung theo các cấp HSK 1–9: thẻ ghi nhớ, phát âm, tập viết từng nét và lịch ôn tập. Khi dùng trang, bạn đồng ý với các điều khoản dưới đây.</p>
-      <ul>
-        <li><b>Miễn phí.</b> Toàn bộ phần học trên trang miễn phí và không có quảng cáo. Bạn đăng nhập bằng tài khoản Google để lưu tiến độ và học tiếp trên nhiều thiết bị.</li>
-        <li><b>Tài khoản.</b> Bạn tự giữ an toàn tài khoản Google của mình. Mỗi tài khoản chỉ thấy tiến độ học của chính tài khoản đó.</li>
-        <li><b>Nội dung.</b> Từ vựng, nghĩa, câu ví dụ và hình chữ được biên soạn để hỗ trợ việc học, có thể còn sai sót. Nếu thấy chỗ sai, bạn gửi email cho mình để sửa. Trang không phải tài liệu chính thức của kỳ thi HSK.</li>
-        <li><b>Sử dụng hợp lý.</b> Không dùng công cụ tự động để tải hàng loạt dữ liệu, không tìm cách truy cập dữ liệu của người khác hoặc làm gián đoạn trang.</li>
-        <li><b>Thay đổi.</b> Trang có thể thay đổi tính năng hoặc tạm dừng để bảo trì. Khi điều khoản thay đổi, ngày áp dụng ở đầu trang này sẽ được cập nhật.</li>
-      </ul>
-
-      <!-- ============ Mua tài liệu ============ -->
-      <h2 id="mua-tai-lieu"><i class="bi bi-bag"></i> Điều khoản mua tài liệu</h2>
-      <p>Ngoài phần học miễn phí, trang bán một số <b>tài liệu số</b> (file PDF, file âm thanh MP3) để in ra luyện viết hoặc nghe khi đi đường. Đây là sản phẩm tải về, không có hàng gửi qua bưu điện.</p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Gói</th><th>Nội dung</th><th>Giá</th></tr></thead>
-          <tbody id="products"></tbody>
-        </table>
-      </div>
-      <h3>Cách mua</h3>
-      <ol>
-        <li>Đăng nhập Google trên trang, mở <b>Tài liệu học tập</b> và chọn gói.</li>
-        <li>Chuyển khoản theo mã QR, giữ nguyên số tiền và nội dung chuyển khoản hiện trên màn hình.</li>
-        <li>Bấm <b>Đã chuyển khoản</b>. Đơn hàng chỉ được tạo cho tài khoản Google đang đăng nhập.</li>
-        <li>Sau khi kiểm tra được khoản tiền, link tải được gửi tới <b>email Google</b> của bạn trong vòng <b>24 giờ</b>. Email có thể nằm trong thư mục Thư rác hoặc Quảng cáo.</li>
+      <p class="policy-meta">Áp dụng từ ngày 25/11/2026 cho nền tảng <b>voclanghsk.com</b>. Các mục dưới đây được sắp theo Điều 4 đến Điều 16 Nghị định 248/2026/NĐ-CP hướng dẫn Luật Thương mại điện tử.</p>
+      <ol class="policy-toc">
+        <li><a href="#nguoi-ban"><span>Mục 1</span>Thông tin về chủ quản</a></li>
+        <li><a href="#bao-mat"><span>Mục 2</span>Chính sách bảo mật</a></li>
+        <li><a href="#dieu-khoan"><span>Mục 3</span>Quyền và nghĩa vụ các bên</a></li>
+        <li><a href="#lien-he"><span>Mục 4</span>Phản ánh, khiếu nại</a></li>
+        <li><a href="#gia"><span>Mục 5</span>Chính sách về giá</a></li>
+        <li><a href="#dieu-kien"><span>Mục 6</span>Điều kiện, hạn chế</a></li>
+        <li><a href="#thanh-toan"><span>Mục 7</span>Thanh toán</a></li>
+        <li><a href="#uu-tien"><span>Mục 8</span>Ưu tiên hiển thị</a></li>
+        <li><a href="#livestream"><span>Mục 9</span>Livestream bán hàng</a></li>
+        <li><a href="#giao-hang"><span>Mục 10</span>Giao hàng</a></li>
+        <li><a href="#hoan-tien"><span>Mục 11</span>Đổi trả và hoàn tiền</a></li>
+        <li><a href="#dich-vu"><span>Mục 12</span>Phương thức cung cấp dịch vụ</a></li>
+        <li><a href="#cham-dut"><span>Mục 13</span>Chấm dứt dịch vụ và hoàn tiền</a></li>
       </ol>
-      <h3>Giao tài liệu</h3>
-      <ul>
-        <li>Link tải dùng được trong <b>24 giờ</b> kể từ khi gửi. Bạn nên tải và lưu file ngay.</li>
-        <li>Nếu link hết hạn trước khi bạn kịp tải, hoặc file bị lỗi, bạn trả lời email đã nhận link để được gửi link mới miễn phí.</li>
-        <li>Giá hiển thị là giá cuối cùng bạn phải trả, không có phí nào khác. Phí chuyển khoản (nếu ngân hàng của bạn thu) do bạn chịu.</li>
-      </ul>
-      <h3>Quyền sử dụng</h3>
-      <ul>
-        <li>Tài liệu dành cho <b>việc học của người mua</b>: bạn được tải về, in và dùng trên các thiết bị của mình.</li>
-        <li>Bạn không được chia sẻ lại, đăng tải công khai hoặc bán lại tài liệu, dù miễn phí hay có phí.</li>
-        <li>Nguồn dữ liệu, giấy phép phông chữ và nét chữ được ghi ở trang cuối mỗi file PDF.</li>
-      </ul>
 
-      <!-- ============ Hoàn tiền ============ -->
-      <h2 id="hoan-tien"><i class="bi bi-arrow-counterclockwise"></i> Chính sách đổi trả và hoàn tiền</h2>
-      <p>Tài liệu là sản phẩm số, nên sau khi đã gửi link tải, mình <b>không nhận trả hàng</b> vì đổi ý. Bạn vẫn được hỗ trợ trong các trường hợp sau:</p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Trường hợp</th><th>Cách xử lý</th></tr></thead>
-          <tbody>
-            <tr><td>Đã chuyển khoản nhưng quá 24 giờ chưa nhận được link</td><td>Kiểm tra thư mục Thư rác. Nếu vẫn không có, gửi email kèm ảnh chụp giao dịch, mình gửi lại link hoặc hoàn tiền theo lựa chọn của bạn.</td></tr>
-            <tr><td>Link hết hạn, file lỗi, thiếu file</td><td>Gửi link mới hoặc file thay thế, miễn phí.</td></tr>
-            <tr><td>Chuyển nhầm số tiền, chuyển thừa, mua trùng một gói</td><td>Hoàn lại phần chuyển thừa hoặc khoản mua trùng vào tài khoản đã chuyển.</td></tr>
-            <tr><td>Tài liệu khác với mô tả trên trang</td><td>Hoàn tiền toàn bộ nếu bạn báo trong vòng 7 ngày kể từ khi nhận link.</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>Mình trả lời yêu cầu trong vòng 2 ngày làm việc. Khoản hoàn tiền được chuyển trong vòng 7 ngày làm việc kể từ khi hai bên thống nhất, về đúng tài khoản đã thanh toán.</p>
+      <!-- Điều 4 -->
+      <section id="nguoi-ban">
+        <h2><span class="no">Mục 1</span> Thông tin về chủ quản nền tảng</h2>
+        <p>Voc-Lang-HSK (<b>voclanghsk.com</b>) do cá nhân dưới đây thiết lập, quản lý và vận hành, đồng thời là người bán các tài liệu trên nền tảng.</p>
+        <dl class="seller" id="seller">
+          <dt>Chủ quản, người bán</dt><dd data-f="name"></dd>
+          <dt>Chủ hộ</dt><dd data-f="owner"></dd>
+          <dt>Mã số thuế</dt><dd data-f="taxCode"></dd>
+          <dt>Địa chỉ</dt><dd data-f="address"></dd>
+          <dt>Điện thoại</dt><dd data-f="phone"></dd>
+          <dt>Email</dt><dd data-f="email"></dd>
+          <dt>Tên miền</dt><dd>voclanghsk.com</dd>
+        </dl>
+      </section>
 
-      <!-- ============ Bảo mật ============ -->
-      <h2 id="bao-mat"><i class="bi bi-shield-check"></i> Chính sách bảo mật</h2>
-      <p>Phần này cho biết trang thu những dữ liệu cá nhân nào, dùng để làm gì, lưu ở đâu và bạn có những quyền gì đối với dữ liệu của mình.</p>
-      <h3>Dữ liệu được thu</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Dữ liệu</th><th>Khi nào</th><th>Dùng để</th></tr></thead>
-          <tbody>
-            <tr><td>Tên, email và ảnh đại diện Google</td><td>Khi bạn đăng nhập</td><td>Nhận diện tài khoản, hiện tên trên trang, gửi link tải tài liệu đã mua</td></tr>
-            <tr><td>Tiến độ học: từ đã học, kết quả ôn tập và tập viết, số từ mỗi ngày, cài đặt</td><td>Khi bạn học</td><td>Lưu tiến độ, đồng bộ giữa các thiết bị, lên lịch ôn tập</td></tr>
-            <tr><td>Đơn mua: tên và email Google, gói, giá, mã chuyển khoản, trạng thái và thời gian của đơn</td><td>Khi bạn mua tài liệu</td><td>Đối chiếu khoản chuyển khoản, gửi tài liệu, hỗ trợ khi có sự cố</td></tr>
-            <tr><td>Nội dung email bạn gửi cho mình</td><td>Khi bạn liên hệ</td><td>Trả lời và xử lý yêu cầu</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>Trang <b>không</b> dùng công cụ phân tích hay theo dõi (như Google Analytics, Facebook Pixel), <b>không</b> hiện quảng cáo và <b>không</b> thu số điện thoại, địa chỉ hay thông tin thẻ ngân hàng. Khi chuyển khoản, giao dịch diễn ra trong ứng dụng ngân hàng của bạn; mình chỉ thấy tên người chuyển, số tiền và nội dung trên sao kê tài khoản nhận tiền.</p>
+      <!-- Điều 5 -->
+      <section id="bao-mat">
+        <h2><span class="no">Mục 2</span> Chính sách bảo mật</h2>
+        <p>Mục này cho biết nền tảng thu những dữ liệu cá nhân nào, dùng để làm gì, lưu ở đâu và bạn có những quyền gì đối với dữ liệu của mình.</p>
+        <h3>Dữ liệu được thu và mục đích</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Dữ liệu</th><th>Khi nào</th><th>Dùng để</th></tr></thead>
+            <tbody>
+              <tr><td>Tên, email và ảnh đại diện Google</td><td>Khi bạn đăng nhập</td><td>Nhận diện tài khoản, hiện tên trên trang, gửi link tải tài liệu đã mua</td></tr>
+              <tr><td>Tiến độ học: từ đã học, kết quả ôn tập và tập viết, số từ mỗi ngày, cài đặt</td><td>Khi bạn học</td><td>Lưu tiến độ, đồng bộ giữa các thiết bị, lên lịch ôn tập</td></tr>
+              <tr><td>Đơn mua: tên và email Google, gói, giá, mã chuyển khoản, trạng thái và thời gian của đơn</td><td>Khi bạn mua tài liệu</td><td>Đối chiếu khoản chuyển khoản, gửi tài liệu, hỗ trợ khi có sự cố</td></tr>
+              <tr><td>Nội dung email bạn gửi</td><td>Khi bạn liên hệ</td><td>Trả lời và xử lý yêu cầu</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Nền tảng <b>không</b> dùng công cụ phân tích hay theo dõi (như Google Analytics, Facebook Pixel), <b>không</b> hiện quảng cáo và <b>không</b> thu số điện thoại, địa chỉ hay thông tin thẻ ngân hàng của người dùng. Khi chuyển khoản, giao dịch diễn ra trong ứng dụng ngân hàng của bạn; người bán chỉ thấy tên người chuyển, số tiền và nội dung trên sao kê tài khoản nhận tiền.</p>
+        <h3>Nơi lưu và bên tham gia xử lý</h3>
+        <ul>
+          <li><b>Thiết bị của bạn:</b> tiến độ học và cài đặt được lưu trong bộ nhớ trình duyệt (localStorage) để học được cả khi mất mạng.</li>
+          <li><b>Google Firebase</b> (Authentication, Cloud Firestore): lưu tài khoản, tiến độ học và đơn mua để đồng bộ giữa các thiết bị.</li>
+          <li><b>Gmail và Google Apps Script</b> của tài khoản Voc-Lang: gửi email chứa link tải tài liệu.</li>
+          <li><b>Cloudflare R2:</b> lưu các file tài liệu để tải về; kho này không chứa dữ liệu cá nhân.</li>
+          <li>Trang được phục vụ qua GitHub Pages và tải phông chữ, thư viện từ Google Fonts, jsDelivr. Các dịch vụ này có thể ghi nhận địa chỉ IP khi trình duyệt tải file, theo chính sách riêng của họ.</li>
+        </ul>
+        <p>Máy chủ của các dịch vụ trên có thể đặt ngoài Việt Nam. Người bán không bán, không cho thuê và không chia sẻ dữ liệu cá nhân của bạn cho bên nào khác, trừ khi pháp luật yêu cầu.</p>
+        <h3>Ai xem được dữ liệu</h3>
+        <ul>
+          <li>Mỗi tài khoản chỉ xem và sửa được dữ liệu của chính mình (quy tắc bảo mật của Firestore chặn truy cập chéo).</li>
+          <li>Người quản trị xem được tên, email, số liệu học tổng hợp và đơn mua để vận hành và hỗ trợ; không xem tiến độ chi tiết từng từ.</li>
+        </ul>
+        <h3>Thời gian lưu</h3>
+        <ul>
+          <li>Tài khoản và tiến độ học: lưu đến khi bạn yêu cầu xóa.</li>
+          <li>Đơn mua: lưu đến khi bạn yêu cầu xóa, trừ phần thông tin giao dịch mà pháp luật về thuế, kế toán yêu cầu lưu giữ.</li>
+        </ul>
+        <h3>Quyền của bạn</h3>
+        <p>Bạn có quyền được biết, xem, sửa, xóa dữ liệu cá nhân của mình, rút lại sự đồng ý và yêu cầu hạn chế xử lý. Để thực hiện, gửi email từ địa chỉ Google đã dùng để đăng nhập tới <span data-f="email"></span>; yêu cầu được xử lý trong vòng 7 ngày làm việc. Bạn cũng có thể tự đặt lại tiến độ học trong mục <b>Cài đặt</b> và đăng xuất bất cứ lúc nào.</p>
+        <p>Khi đăng nhập, bạn đồng ý để nền tảng xử lý dữ liệu như mô tả ở trên. Nếu không đồng ý, bạn không đăng nhập; khi đó nền tảng không lưu dữ liệu nào của bạn lên máy chủ.</p>
+        <h3>Bảo vệ dữ liệu</h3>
+        <p>Dữ liệu được truyền qua kết nối mã hóa HTTPS và lưu trên hạ tầng của Google; quyền đọc, ghi được giới hạn theo từng tài khoản. Nếu xảy ra sự cố lộ lọt dữ liệu, người bán thông báo cho người bị ảnh hưởng và cơ quan có thẩm quyền theo quy định.</p>
+      </section>
 
-      <h3>Nơi lưu dữ liệu</h3>
-      <ul>
-        <li><b>Trên thiết bị của bạn:</b> tiến độ học và cài đặt được lưu trong bộ nhớ của trình duyệt (localStorage) để học được cả khi mất mạng.</li>
-        <li><b>Google Firebase</b> (Authentication, Cloud Firestore): lưu tài khoản, tiến độ học và đơn mua để đồng bộ giữa các thiết bị.</li>
-        <li><b>Gmail và Google Apps Script</b> của tài khoản Voc-Lang: dùng để gửi email chứa link tải tài liệu.</li>
-        <li><b>Cloudflare R2:</b> lưu các file tài liệu để tải về. Kho này không chứa dữ liệu cá nhân của bạn.</li>
-        <li>Trang được phục vụ qua GitHub Pages và tải phông chữ, thư viện từ Google Fonts, jsDelivr. Các dịch vụ này có thể ghi nhận địa chỉ IP khi trình duyệt của bạn tải file, theo chính sách riêng của họ.</li>
-      </ul>
-      <p>Máy chủ của các dịch vụ trên có thể đặt ngoài Việt Nam. Mình không bán, không cho thuê và không chia sẻ dữ liệu cá nhân của bạn cho bên nào khác, trừ khi pháp luật yêu cầu.</p>
+      <!-- Điều 6 -->
+      <section id="dieu-khoan">
+        <h2><span class="no">Mục 3</span> Quyền và nghĩa vụ của các bên</h2>
+        <h3>Người bán (chủ quản nền tảng)</h3>
+        <ul>
+          <li>Cung cấp phần học miễn phí và tài liệu đúng như mô tả; công khai đầy đủ thông tin người bán, giá và các chính sách trên trang này.</li>
+          <li>Giao tài liệu đúng hạn sau khi xác nhận thanh toán; hỗ trợ, gửi lại link và hoàn tiền theo Mục 10, 11 và 13.</li>
+          <li>Bảo mật dữ liệu cá nhân của người dùng theo Mục 2; tiếp nhận và giải quyết phản ánh, khiếu nại theo Mục 4.</li>
+          <li>Được tạm khóa tài khoản hoặc từ chối giao dịch với người dùng vi phạm các điều khoản dưới đây.</li>
+          <li>Thực hiện nghĩa vụ thuế và các nghĩa vụ khác theo quy định của pháp luật.</li>
+        </ul>
+        <h3>Người dùng, người mua</h3>
+        <ul>
+          <li>Được dùng miễn phí phần học, được cung cấp thông tin trung thực về tài liệu và giá, được bảo vệ dữ liệu cá nhân, được phản ánh, khiếu nại và hoàn tiền theo các mục trên trang này.</li>
+          <li>Tự giữ an toàn tài khoản Google của mình; chuyển khoản đúng số tiền và nội dung hiện trên màn hình.</li>
+          <li>Chỉ dùng tài liệu đã mua cho việc học của mình: được tải về, in và dùng trên các thiết bị của mình; <b>không</b> chia sẻ lại, đăng tải công khai hoặc bán lại tài liệu, dù miễn phí hay có phí.</li>
+          <li>Không dùng công cụ tự động để tải hàng loạt dữ liệu, không tìm cách truy cập dữ liệu của người khác hoặc làm gián đoạn nền tảng.</li>
+        </ul>
+        <h3>Về nội dung</h3>
+        <p>Từ vựng, nghĩa, câu ví dụ và hình chữ được biên soạn để hỗ trợ việc học và có thể còn sai sót; khi phát hiện, người dùng có thể báo qua email để được sửa. Nền tảng không phải tài liệu chính thức của kỳ thi HSK. Nguồn dữ liệu, giấy phép phông chữ và nét chữ được ghi ở trang cuối mỗi file PDF.</p>
+      </section>
 
-      <h3>Ai xem được dữ liệu</h3>
-      <ul>
-        <li>Bạn chỉ xem và sửa được dữ liệu của chính tài khoản mình (quy tắc bảo mật của Firestore chặn truy cập chéo).</li>
-        <li>Người quản trị trang xem được tên, email, số liệu học tổng hợp và đơn mua để vận hành và hỗ trợ. Người quản trị không xem tiến độ chi tiết từng từ của bạn.</li>
-      </ul>
+      <!-- Điều 7 -->
+      <section id="lien-he">
+        <h2><span class="no">Mục 4</span> Phương thức tiếp nhận và giải quyết phản ánh, yêu cầu, khiếu nại</h2>
+        <ol>
+          <li><b>Gửi phản ánh:</b> email tới <span data-f="email"></span>, nêu email Google đã dùng, gói tài liệu (nếu có) và nội dung; kèm ảnh chụp giao dịch nếu liên quan đến thanh toán. Với đơn hàng, bạn cũng có thể trả lời trực tiếp email đã nhận link tải.</li>
+          <li><b>Xác nhận:</b> người bán phản hồi đã nhận trong vòng 2 ngày làm việc.</li>
+          <li><b>Giải quyết:</b> đưa ra phương án (gửi lại tài liệu, sửa nội dung, hoàn tiền…) trong vòng 7 ngày làm việc kể từ khi nhận đủ thông tin.</li>
+          <li><b>Nếu chưa thỏa đáng:</b> hai bên ưu tiên thương lượng; nếu không thống nhất được, bạn có thể gửi yêu cầu tới cơ quan quản lý nhà nước về bảo vệ quyền lợi người tiêu dùng hoặc khởi kiện tại Tòa án theo pháp luật Việt Nam.</li>
+        </ol>
+      </section>
 
-      <h3>Thời gian lưu</h3>
-      <ul>
-        <li>Tài khoản và tiến độ học: lưu đến khi bạn yêu cầu xóa.</li>
-        <li>Đơn mua: lưu đến khi bạn yêu cầu xóa, trừ phần thông tin giao dịch mà pháp luật về thuế, kế toán yêu cầu lưu giữ.</li>
-      </ul>
+      <!-- Điều 8 -->
+      <section id="gia">
+        <span id="mua-tai-lieu"></span>
+        <h2><span class="no">Mục 5</span> Chính sách về giá</h2>
+        <p>Phần học trên nền tảng <b>miễn phí</b>. Các tài liệu số (file PDF, file âm thanh MP3) được bán theo giá dưới đây:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Gói</th><th>Nội dung</th><th>Giá</th></tr></thead>
+            <tbody id="products"></tbody>
+          </table>
+        </div>
+        <ul>
+          <li>Giá niêm yết bằng đồng Việt Nam và là số tiền cuối cùng người mua phải trả; không thu thêm phí giao hàng hay phí nào khác. Phí chuyển khoản (nếu ngân hàng của người mua thu) do người mua chịu.</li>
+          <li>Giá gạch ngang (nếu có) là giá gốc trước ưu đãi. Khi giá thay đổi, giá mới áp dụng cho đơn tạo sau thời điểm thay đổi; đơn đã tạo giữ giá cũ.</li>
+        </ul>
+      </section>
 
-      <h3>Quyền của bạn</h3>
-      <p>Bạn có quyền được biết, xem, sửa, xóa dữ liệu cá nhân của mình, rút lại sự đồng ý và yêu cầu hạn chế xử lý dữ liệu. Để thực hiện, bạn gửi email từ địa chỉ Google đã dùng để đăng nhập tới <span data-f="email"></span>. Mình xử lý yêu cầu trong vòng 7 ngày làm việc. Bạn cũng có thể tự xóa tiến độ học trong mục <b>Cài đặt</b> của trang và đăng xuất bất cứ lúc nào.</p>
-      <p>Khi đăng nhập, bạn đồng ý để trang xử lý dữ liệu như mô tả ở trên. Nếu không đồng ý, bạn đừng đăng nhập; khi đó trang không lưu dữ liệu nào của bạn lên máy chủ.</p>
+      <!-- Điều 9 -->
+      <section id="dieu-kien">
+        <h2><span class="no">Mục 6</span> Các điều kiện hoặc hạn chế trong việc cung cấp hàng hóa, dịch vụ</h2>
+        <ul>
+          <li>Cần một tài khoản Google để đăng nhập, lưu tiến độ và mua tài liệu. Tài liệu chỉ được gửi tới email Google của tài khoản đặt mua.</li>
+          <li>Thanh toán bằng chuyển khoản ngân hàng trong nước (mã VietQR); chưa nhận thẻ quốc tế, ví điện tử hay thanh toán khi nhận hàng.</li>
+          <li>Tài liệu là file số để tải về; cần thiết bị đọc được PDF, phát được MP3 và giải nén được file ZIP. Vở luyện viết nên in khổ A4, tỉ lệ 100%.</li>
+          <li>Mỗi tài khoản có một đơn đang xử lý cho mỗi gói tại một thời điểm; có thể mua lại gói đó sau khi link tải lần trước đã hết hạn.</li>
+          <li>Tài liệu chỉ dùng cho mục đích học tập cá nhân của người mua (xem Mục 3).</li>
+        </ul>
+      </section>
 
-      <h3>Bảo vệ dữ liệu</h3>
-      <p>Dữ liệu được truyền qua kết nối mã hóa HTTPS và lưu trên hạ tầng của Google. Quyền đọc, ghi được giới hạn bằng quy tắc bảo mật theo từng tài khoản. Nếu xảy ra sự cố lộ lọt dữ liệu, mình sẽ thông báo cho người bị ảnh hưởng và cơ quan có thẩm quyền theo quy định.</p>
+      <!-- Điều 10 -->
+      <section id="thanh-toan">
+        <h2><span class="no">Mục 7</span> Chính sách về thanh toán</h2>
+        <ol>
+          <li>Đăng nhập Google, mở <b>Tài liệu học tập</b> và chọn gói.</li>
+          <li>Quét mã QR bằng ứng dụng ngân hàng để chuyển khoản tới tài khoản của người bán hiện trên màn hình, <b>giữ nguyên số tiền và nội dung chuyển khoản</b> (nội dung có mã riêng của đơn để đối chiếu).</li>
+          <li>Bấm <b>Đã chuyển khoản</b>. Người bán đối chiếu khoản tiền với sao kê tài khoản rồi gửi tài liệu.</li>
+        </ol>
+        <ul>
+          <li>Nền tảng không lưu và không yêu cầu thông tin thẻ, mật khẩu hay mã OTP ngân hàng.</li>
+          <li>Nếu chuyển sai số tiền hoặc thiếu nội dung, người bán liên hệ qua email để đối chiếu; khoản chuyển thừa hoặc nhầm được hoàn theo Mục 11.</li>
+          <li>Đơn tạo nhưng chưa thanh toán sẽ tự hết hiệu lực sau 7 ngày; người mua có thể hủy đơn bằng nút <b>Tôi chưa mua</b>.</li>
+        </ul>
+      </section>
 
-      <!-- ============ Liên hệ ============ -->
-      <h2 id="lien-he"><i class="bi bi-envelope"></i> Liên hệ, khiếu nại</h2>
-      <p>Mọi câu hỏi, khiếu nại về đơn hàng hoặc yêu cầu về dữ liệu cá nhân, bạn gửi email tới <span data-f="email"></span>. Mình trả lời trong vòng 2 ngày làm việc. Nếu hai bên không tự giải quyết được, tranh chấp được giải quyết theo pháp luật Việt Nam.</p>
-      <p class="mt-4"><a class="btn btn-outline-secondary btn-sm" href="../"><i class="bi bi-arrow-left"></i> Về trang học</a></p>
+      <!-- Điều 11 -->
+      <section id="uu-tien">
+        <h2><span class="no">Mục 8</span> Chính sách về ưu tiên hiển thị</h2>
+        <p class="na"><b>Không áp dụng.</b> Nền tảng chỉ bán tài liệu do chính người bán biên soạn, không có người bán khác và không nhận phí để ưu tiên hiển thị. Các gói được hiện theo thứ tự cố định; nhãn như "Bán chạy", "Khuyên dùng" là gợi ý của người bán, không phải nội dung quảng cáo trả phí.</p>
+      </section>
+
+      <!-- Điều 12 -->
+      <section id="livestream">
+        <h2><span class="no">Mục 9</span> Quy chế hoạt động livestream bán hàng</h2>
+        <p class="na"><b>Không áp dụng.</b> Nền tảng không có chức năng phát trực tiếp (livestream) và không bán hàng qua livestream.</p>
+      </section>
+
+      <!-- Điều 13 -->
+      <section id="giao-hang">
+        <h2><span class="no">Mục 10</span> Chính sách về giao hàng</h2>
+        <ul>
+          <li>Tài liệu được giao dưới dạng <b>link tải file</b> gửi tới email Google của tài khoản đặt mua, trong vòng <b>24 giờ</b> sau khi người bán xác nhận được thanh toán. Không có hàng gửi qua bưu điện.</li>
+          <li>Link tải dùng được trong <b>24 giờ</b> kể từ khi gửi; người mua nên tải và lưu file ngay.</li>
+          <li>Nếu link hết hạn trước khi kịp tải, hoặc file bị lỗi, thiếu, người mua trả lời email đã nhận link để được gửi link mới miễn phí.</li>
+          <li>Email giao hàng có thể nằm trong thư mục Thư rác hoặc Quảng cáo; trạng thái đơn hiện trong mục <b>Tài liệu học tập</b> trên trang.</li>
+        </ul>
+      </section>
+
+      <!-- Điều 14 -->
+      <section id="hoan-tien">
+        <h2><span class="no">Mục 11</span> Chính sách về đổi trả hàng và hoàn tiền</h2>
+        <p>Tài liệu là sản phẩm số, nên sau khi đã gửi link tải, người bán <b>không nhận trả hàng</b> vì đổi ý. Người mua được hỗ trợ trong các trường hợp sau:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Trường hợp</th><th>Cách xử lý</th></tr></thead>
+            <tbody>
+              <tr><td>Đã chuyển khoản nhưng quá 24 giờ chưa nhận được link</td><td>Kiểm tra thư mục Thư rác. Nếu vẫn không có, gửi email kèm ảnh chụp giao dịch; người bán gửi lại link hoặc hoàn tiền theo lựa chọn của người mua.</td></tr>
+              <tr><td>Link hết hạn, file lỗi, thiếu file</td><td>Gửi link mới hoặc file thay thế, miễn phí.</td></tr>
+              <tr><td>Chuyển nhầm số tiền, chuyển thừa, mua trùng một gói</td><td>Hoàn phần chuyển thừa hoặc khoản mua trùng.</td></tr>
+              <tr><td>Tài liệu khác với mô tả trên trang</td><td>Hoàn toàn bộ tiền nếu người mua báo trong vòng 7 ngày kể từ khi nhận link.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Khoản hoàn tiền được chuyển trong vòng 7 ngày làm việc kể từ khi hai bên thống nhất, về đúng tài khoản ngân hàng đã thanh toán, không trừ phí.</p>
+      </section>
+
+      <!-- Điều 15 -->
+      <section id="dich-vu">
+        <h2><span class="no">Mục 12</span> Chính sách về phương thức cung cấp dịch vụ</h2>
+        <ul>
+          <li><b>Học từ vựng:</b> cung cấp trực tuyến, miễn phí, qua trình duyệt web tại voclanghsk.com, gồm hơn 12.000 từ HSK 1–9 với thẻ ghi nhớ, phát âm, tập viết từng nét và lịch ôn tập. Tiến độ được lưu trên thiết bị và đồng bộ qua tài khoản Google.</li>
+          <li><b>Tài liệu số:</b> cung cấp bằng cách gửi link tải file theo Mục 10.</li>
+          <li>Nền tảng có thể tạm ngừng để bảo trì hoặc nâng cấp; khi điều khoản thay đổi, ngày áp dụng ở đầu trang này được cập nhật.</li>
+        </ul>
+      </section>
+
+      <!-- Điều 16 -->
+      <section id="cham-dut">
+        <h2><span class="no">Mục 13</span> Chính sách chấm dứt dịch vụ và hoàn tiền</h2>
+        <ul>
+          <li><b>Người dùng</b> có thể ngừng dùng bất cứ lúc nào: đăng xuất, đặt lại tiến độ trong <b>Cài đặt</b>, hoặc gửi email yêu cầu xóa tài khoản và dữ liệu (xử lý trong 7 ngày làm việc). Phần học miễn phí nên không phát sinh hoàn tiền; tài liệu đã giao vẫn thuộc quyền sử dụng của người mua.</li>
+          <li><b>Người bán</b> có thể tạm khóa hoặc chấm dứt phục vụ tài khoản vi phạm Mục 3 (ví dụ chia sẻ lại, bán lại tài liệu). Đơn đã thanh toán nhưng chưa giao của tài khoản đó được hoàn tiền.</li>
+          <li>Nếu <b>nền tảng ngừng hoạt động</b> hoặc ngừng bán một gói tài liệu, người bán thông báo trên trang ít nhất 30 ngày trước; đơn đã thanh toán nhưng chưa giao được hoàn tiền toàn bộ; tài liệu đã giao người mua vẫn tiếp tục dùng được.</li>
+        </ul>
+      </section>
+
+      <p class="mt-5"><a class="btn btn-outline-secondary btn-sm" href="../"><i class="bi bi-arrow-left"></i> Về trang học</a></p>
     </article>
   </main>
 
@@ -199,11 +291,10 @@
       var cfg = window.SUPPORT_CONFIG || {}, s = cfg.SELLER || {};
       var esc = function (v) { return String(v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
       document.querySelectorAll('[data-f]').forEach(function (el) {
-        var v = s[el.getAttribute('data-f')];
-        if (el.getAttribute('data-f') === 'email' && v) { el.innerHTML = '<b>' + esc(v) + '</b>'; return; }
+        var f = el.getAttribute('data-f'), v = s[f];
+        if (f === 'email' && v) { el.innerHTML = '<b>' + esc(v) + '</b>'; return; }
         if (v) { el.textContent = v; return; }
         if (el.closest('#seller')) {
-          var f = el.getAttribute('data-f');
           if (f === 'owner' || f === 'phone') { el.previousElementSibling.remove(); el.remove(); return; }   // ô không bắt buộc: để trống thì ẩn
           el.innerHTML = '<span class="pending">Đang cập nhật</span>';
         }
