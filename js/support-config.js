@@ -9,6 +9,21 @@ window.SUPPORT_CONFIG = {
   // Điền tài khoản thật rồi thì không cần quan tâm cờ này. Đặt false để ẩn hẳn các nút khi còn là mẫu.
   SHOW_SAMPLE: true,
 
+  /*
+   * Thông tin người bán, hiện ở trang Điều khoản & Chính sách (chinh-sach/) và hộp "Tài liệu học tập".
+   * Website bán hàng phải công bố các thông tin này (Luật Thương mại điện tử 2025). Ô nào để trống thì trang ghi "Đang cập nhật".
+   * Điền đủ trước khi thông báo website với cơ quan quản lý.
+   */
+  SELLER: {
+    name: '',                          // họ tên người bán hoặc tên hộ kinh doanh, có dấu, ví dụ: Hộ kinh doanh Voc-Lang
+    owner: '',                         // chủ hộ kinh doanh (nếu là hộ kinh doanh)
+    taxCode: '',                       // mã số thuế
+    address: '',                       // địa chỉ liên hệ
+    phone: '',                         // số điện thoại (không bắt buộc)
+    email: 'voclang.hsk@gmail.com'     // email nhận hỗ trợ, khiếu nại và yêu cầu về dữ liệu cá nhân
+  },
+  POLICY_URL: 'chinh-sach/',           // trang Điều khoản & Chính sách (đường dẫn tương đối từ trang học)
+
   PAYMENT_CONFIG: {
     // Mã ngân hàng theo VietQR (cột "code" hoặc "bin" tại https://api.vietqr.io/v2/banks), ví dụ: MB, VCB, TCB, ACB, 970422…
     bankId: '970407',

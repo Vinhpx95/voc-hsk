@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="vi" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FAF9F5" id="meta-theme-color">
+  <meta name="description" content="Điều khoản sử dụng, điều khoản mua tài liệu, chính sách hoàn tiền và chính sách bảo mật của Voc-Lang-HSK.">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <title>Điều khoản & Chính sách – Voc-Lang-HSK</title>
+  <script>
+    /* Cùng giao diện Sáng/Tối với trang học */
+    (function () {
+      var ui = {};
+      try { ui = JSON.parse(localStorage.getItem('hoctq-ui')) || {}; } catch (e) { /* bỏ qua */ }
+      var dark = ui.theme ? ui.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+      if (dark) document.getElementById('meta-theme-color').setAttribute('content', '#0F172A');
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .policy { max-width: 760px; margin: 0 auto; padding: 1.5rem 0 4rem; }
+    .policy h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -.01em; margin-bottom: .35rem; }
+    .policy h2 { font-size: 1.2rem; font-weight: 700; margin: 2.25rem 0 .75rem; scroll-margin-top: 80px; display: flex; gap: .5rem; align-items: center; }
+    .policy h2 i { color: var(--primary); }
+    .policy h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 .4rem; }
+    .policy p, .policy li { line-height: 1.7; }
+    .policy ul { padding-left: 1.2rem; }
+    .policy li + li { margin-top: .25rem; }
+    .policy-meta { color: var(--text-muted); font-size: .92rem; }
+    .policy .policy-toc { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
+    .policy-toc a { display: inline-block; padding: .35rem .8rem; border-radius: 999px; background: var(--surface-2); color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+    .policy-toc a:hover { background: var(--primary-soft); color: var(--primary-ink); }
+    .seller { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; display: grid; grid-template-columns: minmax(110px, auto) 1fr; gap: .45rem 1rem; }
+    .seller dt { font-weight: 600; color: var(--text-muted); font-size: .92rem; }
+    .seller dd { margin: 0; overflow-wrap: anywhere; }
+    .seller .pending { color: var(--text-muted); font-style: italic; }
+    .policy table { width: 100%; font-size: .93rem; }
+    .policy th, .policy td { padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; text-align: left; }
+    .policy th { font-weight: 600; color: var(--text-muted); }
+    .table-wrap { overflow-x: auto; }
+    @media (max-width: 480px) { .seller { grid-template-columns: 1fr; gap: .1rem; } .seller dd { margin-bottom: .5rem; } }
+  </style>
+</head>
+<body>
+  <nav class="app-nav sticky-top">
+    <div class="container app-nav-inner">
+      <a class="brand text-reset text-decoration-none" href="../"><span class="brand-mark zh-card">学</span><span class="brand-text">Voc-Lang-HSK</span></a>
+      <div class="nav-actions ms-auto">
+        <a class="icon-btn" href="../" title="Về trang học" aria-label="Về trang học"><i class="bi bi-house"></i></a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <article class="policy">
+      <h1>Điều khoản &amp; Chính sách</h1>
+      <p class="policy-meta">Áp dụng từ ngày 25/11/2026 cho trang <b>voclanghsk.com</b>.</p>
+      <ul class="policy-toc">
+        <li><a href="#nguoi-ban">Người bán</a></li>
+        <li><a href="#dieu-khoan">Điều khoản sử dụng</a></li>
+        <li><a href="#mua-tai-lieu">Mua tài liệu</a></li>
+        <li><a href="#hoan-tien">Hoàn tiền</a></li>
+        <li><a href="#bao-mat">Bảo mật</a></li>
+        <li><a href="#lien-he">Liên hệ</a></li>
+      </ul>
+
+      <!-- ============ Người bán ============ -->
+      <h2 id="nguoi-ban"><i class="bi bi-shop"></i> Thông tin người bán</h2>
+      <dl class="seller" id="seller">
+        <dt>Người bán</dt><dd data-f="name"></dd>
+        <dt>Chủ hộ</dt><dd data-f="owner"></dd>
+        <dt>Mã số thuế</dt><dd data-f="taxCode"></dd>
+        <dt>Địa chỉ</dt><dd data-f="address"></dd>
+        <dt>Điện thoại</dt><dd data-f="phone"></dd>
+        <dt>Email</dt><dd data-f="email"></dd>
+      </dl>
+
+      <!-- ============ Điều khoản sử dụng ============ -->
+      <h2 id="dieu-khoan"><i class="bi bi-journal-text"></i> Điều khoản sử dụng</h2>
+      <p>Voc-Lang-HSK là trang học từ vựng tiếng Trung theo các cấp HSK 1–9: thẻ ghi nhớ, phát âm, tập viết từng nét và lịch ôn tập. Khi dùng trang, bạn đồng ý với các điều khoản dưới đây.</p>
+      <ul>
+        <li><b>Miễn phí.</b> Toàn bộ phần học trên trang miễn phí và không có quảng cáo. Bạn đăng nhập bằng tài khoản Google để lưu tiến độ và học tiếp trên nhiều thiết bị.</li>
+        <li><b>Tài khoản.</b> Bạn tự giữ an toàn tài khoản Google của mình. Mỗi tài khoản chỉ thấy tiến độ học của chính tài khoản đó.</li>
+        <li><b>Nội dung.</b> Từ vựng, nghĩa, câu ví dụ và hình chữ được biên soạn để hỗ trợ việc học, có thể còn sai sót. Nếu thấy chỗ sai, bạn gửi email cho mình để sửa. Trang không phải tài liệu chính thức của kỳ thi HSK.</li>
+        <li><b>Sử dụng hợp lý.</b> Không dùng công cụ tự động để tải hàng loạt dữ liệu, không tìm cách truy cập dữ liệu của người khác hoặc làm gián đoạn trang.</li>
+        <li><b>Thay đổi.</b> Trang có thể thay đổi tính năng hoặc tạm dừng để bảo trì. Khi điều khoản thay đổi, ngày áp dụng ở đầu trang này sẽ được cập nhật.</li>
+      </ul>
+
+      <!-- ============ Mua tài liệu ============ -->
+      <h2 id="mua-tai-lieu"><i class="bi bi-bag"></i> Điều khoản mua tài liệu</h2>
+      <p>Ngoài phần học miễn phí, trang bán một số <b>tài liệu số</b> (file PDF, file âm thanh MP3) để in ra luyện viết hoặc nghe khi đi đường. Đây là sản phẩm tải về, không có hàng gửi qua bưu điện.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Gói</th><th>Nội dung</th><th>Giá</th></tr></thead>
+          <tbody id="products"></tbody>
+        </table>
+      </div>
+      <h3>Cách mua</h3>
+      <ol>
+        <li>Đăng nhập Google trên trang, mở <b>Tài liệu học tập</b> và chọn gói.</li>
+        <li>Chuyển khoản theo mã QR, giữ nguyên số tiền và nội dung chuyển khoản hiện trên màn hình.</li>
+        <li>Bấm <b>Đã chuyển khoản</b>. Đơn hàng chỉ được tạo cho tài khoản Google đang đăng nhập.</li>
+        <li>Sau khi kiểm tra được khoản tiền, link tải được gửi tới <b>email Google</b> của bạn trong vòng <b>24 giờ</b>. Email có thể nằm trong thư mục Thư rác hoặc Quảng cáo.</li>
+      </ol>
+      <h3>Giao tài liệu</h3>
+      <ul>
+        <li>Link tải dùng được trong <b>24 giờ</b> kể từ khi gửi. Bạn nên tải và lưu file ngay.</li>
+        <li>Nếu link hết hạn trước khi bạn kịp tải, hoặc file bị lỗi, bạn trả lời email đã nhận link để được gửi link mới miễn phí.</li>
+        <li>Giá hiển thị là giá cuối cùng bạn phải trả, không có phí nào khác. Phí chuyển khoản (nếu ngân hàng của bạn thu) do bạn chịu.</li>
+      </ul>
+      <h3>Quyền sử dụng</h3>
+      <ul>
+        <li>Tài liệu dành cho <b>việc học của người mua</b>: bạn được tải về, in và dùng trên các thiết bị của mình.</li>
+        <li>Bạn không được chia sẻ lại, đăng tải công khai hoặc bán lại tài liệu, dù miễn phí hay có phí.</li>
+        <li>Nguồn dữ liệu, giấy phép phông chữ và nét chữ được ghi ở trang cuối mỗi file PDF.</li>
+      </ul>
+
+      <!-- ============ Hoàn tiền ============ -->
+      <h2 id="hoan-tien"><i class="bi bi-arrow-counterclockwise"></i> Chính sách đổi trả và hoàn tiền</h2>
+      <p>Tài liệu là sản phẩm số, nên sau khi đã gửi link tải, mình <b>không nhận trả hàng</b> vì đổi ý. Bạn vẫn được hỗ trợ trong các trường hợp sau:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Trường hợp</th><th>Cách xử lý</th></tr></thead>
+          <tbody>
+            <tr><td>Đã chuyển khoản nhưng quá 24 giờ chưa nhận được link</td><td>Kiểm tra thư mục Thư rác. Nếu vẫn không có, gửi email kèm ảnh chụp giao dịch, mình gửi lại link hoặc hoàn tiền theo lựa chọn của bạn.</td></tr>
+            <tr><td>Link hết hạn, file lỗi, thiếu file</td><td>Gửi link mới hoặc file thay thế, miễn phí.</td></tr>
+            <tr><td>Chuyển nhầm số tiền, chuyển thừa, mua trùng một gói</td><td>Hoàn lại phần chuyển thừa hoặc khoản mua trùng vào tài khoản đã chuyển.</td></tr>
+            <tr><td>Tài liệu khác với mô tả trên trang</td><td>Hoàn tiền toàn bộ nếu bạn báo trong vòng 7 ngày kể từ khi nhận link.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Mình trả lời yêu cầu trong vòng 2 ngày làm việc. Khoản hoàn tiền được chuyển trong vòng 7 ngày làm việc kể từ khi hai bên thống nhất, về đúng tài khoản đã thanh toán.</p>
+
+      <!-- ============ Bảo mật ============ -->
+      <h2 id="bao-mat"><i class="bi bi-shield-check"></i> Chính sách bảo mật</h2>
+      <p>Phần này cho biết trang thu những dữ liệu cá nhân nào, dùng để làm gì, lưu ở đâu và bạn có những quyền gì đối với dữ liệu của mình.</p>
+      <h3>Dữ liệu được thu</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dữ liệu</th><th>Khi nào</th><th>Dùng để</th></tr></thead>
+          <tbody>
+            <tr><td>Tên, email và ảnh đại diện Google</td><td>Khi bạn đăng nhập</td><td>Nhận diện tài khoản, hiện tên trên trang, gửi link tải tài liệu đã mua</td></tr>
+            <tr><td>Tiến độ học: từ đã học, kết quả ôn tập và tập viết, số từ mỗi ngày, cài đặt</td><td>Khi bạn học</td><td>Lưu tiến độ, đồng bộ giữa các thiết bị, lên lịch ôn tập</td></tr>
+            <tr><td>Đơn mua: tên và email Google, gói, giá, mã chuyển khoản, trạng thái và thời gian của đơn</td><td>Khi bạn mua tài liệu</td><td>Đối chiếu khoản chuyển khoản, gửi tài liệu, hỗ trợ khi có sự cố</td></tr>
+            <tr><td>Nội dung email bạn gửi cho mình</td><td>Khi bạn liên hệ</td><td>Trả lời và xử lý yêu cầu</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Trang <b>không</b> dùng công cụ phân tích hay theo dõi (như Google Analytics, Facebook Pixel), <b>không</b> hiện quảng cáo và <b>không</b> thu số điện thoại, địa chỉ hay thông tin thẻ ngân hàng. Khi chuyển khoản, giao dịch diễn ra trong ứng dụng ngân hàng của bạn; mình chỉ thấy tên người chuyển, số tiền và nội dung trên sao kê tài khoản nhận tiền.</p>
+
+      <h3>Nơi lưu dữ liệu</h3>
+      <ul>
+        <li><b>Trên thiết bị của bạn:</b> tiến độ học và cài đặt được lưu trong bộ nhớ của trình duyệt (localStorage) để học được cả khi mất mạng.</li>
+        <li><b>Google Firebase</b> (Authentication, Cloud Firestore): lưu tài khoản, tiến độ học và đơn mua để đồng bộ giữa các thiết bị.</li>
+        <li><b>Gmail và Google Apps Script</b> của tài khoản Voc-Lang: dùng để gửi email chứa link tải tài liệu.</li>
+        <li><b>Cloudflare R2:</b> lưu các file tài liệu để tải về. Kho này không chứa dữ liệu cá nhân của bạn.</li>
+        <li>Trang được phục vụ qua GitHub Pages và tải phông chữ, thư viện từ Google Fonts, jsDelivr. Các dịch vụ này có thể ghi nhận địa chỉ IP khi trình duyệt của bạn tải file, theo chính sách riêng của họ.</li>
+      </ul>
+      <p>Máy chủ của các dịch vụ trên có thể đặt ngoài Việt Nam. Mình không bán, không cho thuê và không chia sẻ dữ liệu cá nhân của bạn cho bên nào khác, trừ khi pháp luật yêu cầu.</p>
+
+      <h3>Ai xem được dữ liệu</h3>
+      <ul>
+        <li>Bạn chỉ xem và sửa được dữ liệu của chính tài khoản mình (quy tắc bảo mật của Firestore chặn truy cập chéo).</li>
+        <li>Người quản trị trang xem được tên, email, số liệu học tổng hợp và đơn mua để vận hành và hỗ trợ. Người quản trị không xem tiến độ chi tiết từng từ của bạn.</li>
+      </ul>
+
+      <h3>Thời gian lưu</h3>
+      <ul>
+        <li>Tài khoản và tiến độ học: lưu đến khi bạn yêu cầu xóa.</li>
+        <li>Đơn mua: lưu đến khi bạn yêu cầu xóa, trừ phần thông tin giao dịch mà pháp luật về thuế, kế toán yêu cầu lưu giữ.</li>
+      </ul>
+
+      <h3>Quyền của bạn</h3>
+      <p>Bạn có quyền được biết, xem, sửa, xóa dữ liệu cá nhân của mình, rút lại sự đồng ý và yêu cầu hạn chế xử lý dữ liệu. Để thực hiện, bạn gửi email từ địa chỉ Google đã dùng để đăng nhập tới <span data-f="email"></span>. Mình xử lý yêu cầu trong vòng 7 ngày làm việc. Bạn cũng có thể tự xóa tiến độ học trong mục <b>Cài đặt</b> của trang và đăng xuất bất cứ lúc nào.</p>
+      <p>Khi đăng nhập, bạn đồng ý để trang xử lý dữ liệu như mô tả ở trên. Nếu không đồng ý, bạn đừng đăng nhập; khi đó trang không lưu dữ liệu nào của bạn lên máy chủ.</p>
+
+      <h3>Bảo vệ dữ liệu</h3>
+      <p>Dữ liệu được truyền qua kết nối mã hóa HTTPS và lưu trên hạ tầng của Google. Quyền đọc, ghi được giới hạn bằng quy tắc bảo mật theo từng tài khoản. Nếu xảy ra sự cố lộ lọt dữ liệu, mình sẽ thông báo cho người bị ảnh hưởng và cơ quan có thẩm quyền theo quy định.</p>
+
+      <!-- ============ Liên hệ ============ -->
+      <h2 id="lien-he"><i class="bi bi-envelope"></i> Liên hệ, khiếu nại</h2>
+      <p>Mọi câu hỏi, khiếu nại về đơn hàng hoặc yêu cầu về dữ liệu cá nhân, bạn gửi email tới <span data-f="email"></span>. Mình trả lời trong vòng 2 ngày làm việc. Nếu hai bên không tự giải quyết được, tranh chấp được giải quyết theo pháp luật Việt Nam.</p>
+      <p class="mt-4"><a class="btn btn-outline-secondary btn-sm" href="../"><i class="bi bi-arrow-left"></i> Về trang học</a></p>
+    </article>
+  </main>
+
+  <script src="../js/support-config.js"></script>
+  <script>
+    /* Điền thông tin người bán và bảng gói từ js/support-config.js (một nguồn cho cả trang học và trang này) */
+    (function () {
+      var cfg = window.SUPPORT_CONFIG || {}, s = cfg.SELLER || {};
+      var esc = function (v) { return String(v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      document.querySelectorAll('[data-f]').forEach(function (el) {
+        var v = s[el.getAttribute('data-f')];
+        if (el.getAttribute('data-f') === 'email' && v) { el.innerHTML = '<b>' + esc(v) + '</b>'; return; }
+        if (v) { el.textContent = v; return; }
+        if (el.closest('#seller')) {
+          var f = el.getAttribute('data-f');
+          if (f === 'owner' || f === 'phone') { el.previousElementSibling.remove(); el.remove(); return; }   // ô không bắt buộc: để trống thì ẩn
+          el.innerHTML = '<span class="pending">Đang cập nhật</span>';
+        }
+      });
+      var vnd = function (n) { return n.toLocaleString('vi-VN') + 'đ'; };
+      document.getElementById('products').innerHTML = (cfg.DIGITAL_PRODUCTS || []).map(function (p) {
+        return '<tr><td><b>' + esc(p.name) + '</b><br><span class="policy-meta">' + esc(p.format) + '</span></td><td>' + esc(p.description) + '</td><td class="text-nowrap"><b>' + vnd(p.price) + '</b>' +
+          (p.originalPrice ? '<br><s class="policy-meta">' + vnd(p.originalPrice) + '</s>' : '') + '</td></tr>';
+      }).join('');
+    })();
+  </script>
+</body>
+</html>

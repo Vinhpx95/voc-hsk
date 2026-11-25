@@ -353,6 +353,13 @@
     var peek = false;           // đơn đã báo chuyển khoản: bấm "Xem lại thông tin chuyển khoản"
     var errText = '', busy = false, token = 0, remindTimer = null, pickOnLoad = false;
 
+    // Người bán (SUPPORT_CONFIG.SELLER): tên + mã số thuế nếu đã điền, luôn có email hỗ trợ
+    var seller = C.SELLER || {}, sellerEl = $('.sp-seller', modal);
+    if (sellerEl) {
+      sellerEl.textContent = [seller.name && 'Người bán: ' + seller.name, seller.taxCode && 'MST ' + seller.taxCode, seller.email && 'Hỗ trợ: ' + seller.email]
+        .filter(Boolean).join(' · ');
+    }
+
     var gate = document.createElement('div');
     gate.className = 'sp-gate';
     payRoot.appendChild(gate);
