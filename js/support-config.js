@@ -15,12 +15,12 @@ window.SUPPORT_CONFIG = {
    * Điền đủ trước khi thông báo website với cơ quan quản lý.
    */
   SELLER: {
-    name: '',                          // họ tên người bán hoặc tên hộ kinh doanh, có dấu, ví dụ: Hộ kinh doanh Voc-Lang
-    owner: '',                         // chủ hộ kinh doanh (nếu là hộ kinh doanh)
-    taxCode: '',                       // mã số thuế
-    address: '',                       // địa chỉ liên hệ
-    phone: '',                         // số điện thoại (không bắt buộc)
-    email: 'voclang.hsk@gmail.com'     // email nhận hỗ trợ, khiếu nại và yêu cầu về dữ liệu cá nhân
+    name: 'Phạm Xuân Vinh',                              // họ tên người bán hoặc tên hộ kinh doanh, có dấu, ví dụ: Hộ kinh doanh Voc-Lang
+    owner: '',                                           // chủ hộ kinh doanh (nếu là hộ kinh doanh)
+    taxCode: '024095009683',                             // mã số thuế
+    address: 'TDP Tân Thịnh, Phường Kép, Bắc Ninh',      // địa chỉ liên hệ
+    phone: '',                                           // số điện thoại (không bắt buộc)
+    email: 'voclang.hsk@gmail.com'                       // email nhận hỗ trợ, khiếu nại và yêu cầu về dữ liệu cá nhân
   },
   POLICY_URL: 'chinh-sach/',           // trang Điều khoản & Chính sách (đường dẫn tương đối từ trang học)
 
