@@ -18,8 +18,8 @@
  *                           Gmail → Cài đặt → Tài khoản và Nhập → Gửi thư bằng địa chỉ)
  */
 var PROJECT_ID = 'voc-lang-hsk';
-var ADMIN_URL = 'https://voc-hsk.netlify.app/admin-report/';
-var APP_URL = 'https://voc-hsk.netlify.app/';
+var ADMIN_URL = 'https://voclanghsk.com/admin-report/';
+var APP_URL = 'https://voclanghsk.com/';
 var LINK_HOURS = 24;
 var TZ = 'Asia/Ho_Chi_Minh';
 var FILES = {

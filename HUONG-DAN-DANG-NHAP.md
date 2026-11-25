@@ -15,7 +15,7 @@ GitHub trước khi điền cấu hình**. Thêm `?welcome` vào địa chỉ đ
 
 1. Menu trái **Build → Authentication → Get started**.
 2. Tab **Sign-in method → Google → Enable**, chọn *Project support email* → **Save**.
-3. Tab **Settings → Authorized domains → Add domain**: thêm `voc-hsk.netlify.app` (và `vinhpx95.github.io` nếu vẫn dùng GitHub Pages)
+3. Tab **Settings → Authorized domains → Add domain**: thêm `voclanghsk.com` (tên miền chính, gắn vào GitHub Pages) và `voc-hsk.netlify.app`, `vinhpx95.github.io` (địa chỉ cũ, tự chuyển hướng sang voclanghsk.com)
    (`localhost` đã có sẵn để thử trên máy).
 
 ## 3. Tạo Firestore và dán quy tắc bảo mật
@@ -56,7 +56,7 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 
 - Thử trên máy: mở trang qua `http://localhost:...`. Đăng nhập **không** chạy khi mở file `index.html` trực tiếp,
   nên từ giờ muốn học trên máy thì mở qua localhost hoặc GitHub Pages.
-- Push lên `main` → GitHub Pages cập nhật sau 1–2 phút → mở <https://vinhpx95.github.io/voc-hsk/>.
+- Push lên `main` → GitHub Pages cập nhật sau 1–2 phút → mở <https://voclanghsk.com/>.
 
 ## Cách đồng bộ hoạt động
 
@@ -75,7 +75,7 @@ không sao. Dữ liệu được bảo vệ bằng quy tắc ở bước 3.
 
 ## Trang báo cáo quản trị (admin)
 
-Địa chỉ: <https://voc-hsk.netlify.app/admin-report/>. Trang không có liên kết ở đâu, không được Google lập chỉ mục,
+Địa chỉ: <https://voclanghsk.com/admin-report/>. Trang không có liên kết ở đâu, không được Google lập chỉ mục,
 và chỉ mở cho email quản trị. Người chưa đăng nhập hoặc tài khoản khác bị chuyển về trang chủ.
 
 - **Thẻ tổng quan:** tổng tài khoản, tổng lượt sử dụng, người dùng mới 7 ngày qua, người hoạt động hôm nay.
