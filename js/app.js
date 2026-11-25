@@ -444,8 +444,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function needToUnlock(l) { return Math.ceil(l.count * UNLOCK_RATIO); }
 
+  /* Tài khoản quản trị (email khớp ADMIN_EMAIL_SHA256 trong js/firebase-config.js): mở mọi cấp để soát nội dung, quay video.
+   * Chỉ là hiển thị trên máy này, không ghi vào lộ trình đã lưu (dữ liệu từ vựng vốn công khai, không phải quyền truy cập). */
+  var adminAll = false;
+  function checkAdmin() {
+    var i = window.Cloud && Cloud.info ? Cloud.info() : null;
+    var email = i && i.mode === 'user' ? String(i.email || '').trim().toLowerCase() : '';
+    var done = function (v) {
+      if (v === adminAll) return;
+      adminAll = v;
+      lastUnlocked = unlockedCount();   // không bật màn "Mở khóa cấp mới" khi đổi tài khoản
+      refreshAll(); renderDashboard();
+    };
+    if (!email || !window.ADMIN_EMAIL_SHA256 || !window.crypto || !crypto.subtle) return done(false);
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(email)).then(function (buf) {
+      var h = Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+      done(h === window.ADMIN_EMAIL_SHA256);
+    }, function () { done(false); });
+  }
+
   /** Số cấp đang mở (tính từ đầu danh sách levels.js); lưu lại khi mở thêm cấp mới */
   function unlockedCount(summary) {
+    if (adminAll) return availableLevels().length;
     var levels = availableLevels(), st = Store.getSettings();
     var s = summary || Store.summary();
     var n = Math.min(levels.length, Math.max(st.unlocked, st.startLevel, 1));
@@ -1224,6 +1244,8 @@ document.addEventListener('DOMContentLoaded', function () {
     lastUnlocked = unlockedCount();
     refreshAll();
   });
+  // Đăng nhập / đăng xuất / đổi tài khoản → kiểm tra lại quyền quản trị
+  window.addEventListener('authchange', checkAdmin);
   window.addEventListener('storage', function (e) {
     if (e.key && e.key.indexOf('hoctq.') !== 0) return;
     location.reload();   // tab khác vừa đổi tiến độ → đồng bộ lại
@@ -1359,4 +1381,5 @@ document.addEventListener('DOMContentLoaded', function () {
   renderHskFilter();
   renderDashboard();
   buildDeck();
+  checkAdmin();
 });
